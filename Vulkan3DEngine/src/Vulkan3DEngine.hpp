@@ -48,6 +48,8 @@ const std::vector<const char*> deviceExtensions = {
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 class Vulkan3DEngine {
 public:
 	void run();
@@ -55,6 +57,7 @@ public:
 private:
 	// Window initialization
 	void initWindow();
+	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 	// Vulkan initialization - VulkanInit.cpp
 	void initVulkan();
@@ -69,7 +72,7 @@ private:
 	void createGraphicsPipeline();
 	void createFramebuffers();
 	void createCommandPool();
-	void createCommandBuffer();
+	void createCommandBuffers();
 	void createSyncObjects();
 
 	// Validation layers - VulkanValidationLayers.cpp
@@ -81,6 +84,7 @@ private:
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
 	// Swap chain - VulkanSwapChain.cpp
+	void recreateSwapChain();
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -111,6 +115,7 @@ private:
 	void mainLoop();
 
 	// Clean up - VulkanCleanup.cpp
+	void cleanupSwapChain();
 	void cleanup();
 	
 private:
@@ -147,10 +152,15 @@ private:
 
 	// Command pool -> drawing commands
 	VkCommandPool commandPool;
-	VkCommandBuffer commandBuffer;
+	std::vector<VkCommandBuffer> commandBuffers;
 
 	// Semaphores
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore renderFinishedSemaphore;
-	VkFence inFlightFence;
+	std::vector<VkSemaphore> imageAvailableSemaphores;
+	std::vector<VkSemaphore> renderFinishedSemaphores;
+	std::vector<VkFence> inFlightFences;
+
+	bool framebufferResized = false;
+
+	// Index to count frames in flight
+	uint32_t currentFrame = 0;
 };

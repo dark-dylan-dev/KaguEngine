@@ -63,3 +63,21 @@ VkExtent2D Vulkan3DEngine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capa
         return actualExtent;
     }
 }
+
+
+void Vulkan3DEngine::recreateSwapChain() {
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(window, &width, &height);
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(device);
+
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createFramebuffers();
+}
