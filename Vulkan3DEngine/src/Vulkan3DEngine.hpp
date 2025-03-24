@@ -3,6 +3,8 @@
 // GLFW / Vulkan
 #define GLFW_INCLUDE_VULKAN // Tell GLFW we want to include Vulkan
 #include <GLFW/glfw3.h>     // GLFW
+// GLM
+#include <glm/glm.hpp>
 // STL
 #include <iostream>  // Console output & input
 #include <cstdlib>   // C STL

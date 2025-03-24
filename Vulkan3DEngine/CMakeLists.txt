@@ -12,6 +12,11 @@ add_subdirectory(extern/glfw)
 target_link_libraries(Vulkan3DEngine PRIVATE glfw)
 target_include_directories(Vulkan3DEngine PRIVATE extern/glfw/include)
 
+# Adding GLM
+add_subdirectory(extern/glm)
+target_link_libraries(Vulkan3DEngine PRIVATE glm)
+target_include_directories(Vulkan3DEngine PRIVATE extern/glm)
+
 # Adding Vulkan
 find_package(Vulkan REQUIRED)
 if(NOT Vulkan_FOUND)
