@@ -56,7 +56,7 @@ private:
 	// Window initialization
 	void initWindow();
 
-	// Vulkan initialization
+	// Vulkan initialization - VulkanInit.cpp
 	void initVulkan();
 	void createInstance();
 	void setupDebugMessenger();
@@ -72,27 +72,32 @@ private:
 	void createCommandBuffer();
 	void createSyncObjects();
 
-	// Validation layers
+	// Validation layers - VulkanValidationLayers.cpp
 	bool checkValidationLayerSupport();
 
-	// Choosing devices
+	// Choosing devices - VulkanDeviceChoice.cpp
 	int rateDeviceSuitability(VkPhysicalDevice device);
+	std::vector<const char*> getRequiredExtensions();
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+
+	// Swap chain - VulkanSwapChain.cpp
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-	std::vector<const char*> getRequiredExtensions();
 
-	// Shaders
+	// Queues - VulkanQueues.cpp
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
+	// Shaders - VulkanShaders.cpp
 	static std::vector<char> readFile(const std::string& filename);
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 
-	// Command buffer specific functions
+	// Command buffer & Frame rendering - VulkanFrameRendering.cpp
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+	void drawFrame();
 
-	// Debug functionnalities
+	// Debug functionnalities - VulkanDebugger.cpp
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -102,22 +107,24 @@ private:
 	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
-	// Main loop
+	// Main loop - Vulkan3DEngine.cpp
 	void mainLoop();
-	void drawFrame();
 
-	// Clean up
+	// Clean up - VulkanCleanup.cpp
 	void cleanup();
 	
 private:
+	// GLFW window
 	GLFWwindow* window;
 
-	VkInstance instance;
+	// Vulkan debugger
 	VkDebugUtilsMessengerEXT debugMessenger;
-	VkSurfaceKHR surface;
 
+	// Vulkan instance -> device -> surface
+	VkInstance instance;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device;
+	VkSurfaceKHR surface;
 
 	// Queues
 	VkQueue graphicsQueue;
