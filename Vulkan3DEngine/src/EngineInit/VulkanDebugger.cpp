@@ -16,7 +16,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Vulkan3DEngine::debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-    std::cerr << "Vsalidation layer: " << pCallbackData->pMessage << std::endl;
+    std::cerr << "Validation layer : " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }

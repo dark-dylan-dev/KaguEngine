@@ -18,6 +18,7 @@
 #include <algorithm> // To use std::clamp
 #include <fstream>   // To load shaders
 #include <cstring>   // To use strcmp()
+#include <array>     // To describe the attributes of a vertex
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -47,10 +48,56 @@ const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
+struct Vertex {
+	glm::vec2 pos;
+	glm::vec3 color;
+
+	static VkVertexInputBindingDescription getBindingDescription() {
+		VkVertexInputBindingDescription bindingDescription{};
+
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(Vertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		return bindingDescription;
+	}
+
+	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex, pos);
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+		return attributeDescriptions;
+	}
+};
+
+const std::vector<Vertex> vertices = { 
+	// Notes :
+	// - posY = -1 -> top of the screen
+	// - posX = -1 -> left of the screen
+	// Syntax : {{posX, posY}, {R, G, B}}
+	// ----------------------------------
+	// 1st triangle
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}}, // Top left vertex     - RED
+	{{0.5f, -0.5f},  {1.0f, 1.0f, 0.0f}}, // Top right vertex    - YELLOW
+	{{0.5f,  0.5f},  {0.0f, 1.0f, 0.0f}}, // Bottom right vertex - GREEN
+	// 2nd triangle
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}}, // Top left vertex     - RED
+	{{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}}, // Bottom right vertex - GREEN
+	{{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}}  // Bottom left vertex  - BLUE
+};
+
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
+const int MAX_FRAMES_IN_FLIGHT = 3;
 
 class Vulkan3DEngine {
 public:
@@ -74,6 +121,7 @@ private:
 	void createGraphicsPipeline();
 	void createFramebuffers();
 	void createCommandPool();
+	void createVertexBuffer();
 	void createCommandBuffers();
 	void createSyncObjects();
 
@@ -102,6 +150,9 @@ private:
 	// Command buffer & Frame rendering - VulkanFrameRendering.cpp
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 	void drawFrame();
+
+	// Vertex buffer construction
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	// Debug functionnalities - VulkanDebugger.cpp
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -155,6 +206,10 @@ private:
 	// Command pool -> drawing commands
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
+
+	// Vertex buffers
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
 
 	// Semaphores
 	std::vector<VkSemaphore> imageAvailableSemaphores;
