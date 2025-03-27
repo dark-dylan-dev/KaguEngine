@@ -1,6 +1,6 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-uint32_t Vulkan3DEngine::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t KaguEngine::App::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 	VkPhysicalDeviceMemoryProperties memProperties;
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 

@@ -1,7 +1,7 @@
-#include "Vulkan3DEngine.hpp"
+#include "KaguEngine.hpp"
 
 int main() {
-	Vulkan3DEngine Engine;
+	KaguEngine::App Engine;
 
 	try {
 		Engine.run();

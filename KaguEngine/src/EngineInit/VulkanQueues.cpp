@@ -1,6 +1,6 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-QueueFamilyIndices Vulkan3DEngine::findQueueFamilies(VkPhysicalDevice device) {
+KaguEngine::QueueFamilyIndices KaguEngine::App::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;

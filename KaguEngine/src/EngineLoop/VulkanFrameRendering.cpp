@@ -1,6 +1,6 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-void Vulkan3DEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void KaguEngine::App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -50,7 +50,7 @@ void Vulkan3DEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
     }
 }
 
-void Vulkan3DEngine::drawFrame() {
+void KaguEngine::App::drawFrame() {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;

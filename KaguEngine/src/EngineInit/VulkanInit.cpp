@@ -1,18 +1,18 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-void Vulkan3DEngine::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<Vulkan3DEngine*>(glfwGetWindowUserPointer(window));
+void KaguEngine::App::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
     app->framebufferResized = true;
 }
 
-void Vulkan3DEngine::createInstance() {
+void KaguEngine::App::createInstance() {
     if (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Vulkan 3D Engine";
+    appInfo.pApplicationName = "Kagu Engine";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -45,7 +45,7 @@ void Vulkan3DEngine::createInstance() {
     }
 }
 
-void Vulkan3DEngine::setupDebugMessenger() {
+void KaguEngine::App::setupDebugMessenger() {
     if (!enableValidationLayers) return;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -56,13 +56,13 @@ void Vulkan3DEngine::setupDebugMessenger() {
     }
 }
 
-void Vulkan3DEngine::createSurface() {
+void KaguEngine::App::createSurface() {
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create window surface!");
     }
 }
 
-void Vulkan3DEngine::pickPhysicalDevice() {
+void KaguEngine::App::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -89,7 +89,7 @@ void Vulkan3DEngine::pickPhysicalDevice() {
     }
 }
 
-void Vulkan3DEngine::createLogicalDevice() {
+void KaguEngine::App::createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -134,7 +134,7 @@ void Vulkan3DEngine::createLogicalDevice() {
     vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
 
-void Vulkan3DEngine::createSwapChain() {
+void KaguEngine::App::createSwapChain() {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -188,7 +188,7 @@ void Vulkan3DEngine::createSwapChain() {
     swapChainExtent = extent;
 }
 
-void Vulkan3DEngine::createImageViews() {
+void KaguEngine::App::createImageViews() {
     swapChainImageViews.resize(swapChainImages.size());
 
     for (size_t i = 0; i < swapChainImages.size(); i++) {
@@ -216,7 +216,7 @@ void Vulkan3DEngine::createImageViews() {
     }
 }
 
-void Vulkan3DEngine::createRenderPass() {
+void KaguEngine::App::createRenderPass() {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -265,9 +265,9 @@ void Vulkan3DEngine::createRenderPass() {
     }
 }
 
-void Vulkan3DEngine::createGraphicsPipeline() {
-    auto vertShaderCode = readFile("C:/Users/PC/source/repos/Vulkan3DEngine/Vulkan3DEngine/shaders/vert.spv");
-    auto fragShaderCode = readFile("C:/Users/PC/source/repos/Vulkan3DEngine/Vulkan3DEngine/shaders/frag.spv");
+void KaguEngine::App::createGraphicsPipeline() {
+    auto vertShaderCode = readFile("C:/Users/PC/source/repos/dark-dylan-93220/KaguEngine/KaguEngine/shaders/vert.spv");
+    auto fragShaderCode = readFile("C:/Users/PC/source/repos/dark-dylan-93220/KaguEngine/KaguEngine/shaders/frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -393,7 +393,7 @@ void Vulkan3DEngine::createGraphicsPipeline() {
     vkDestroyShaderModule(device, vertShaderModule, nullptr);
 }
 
-void Vulkan3DEngine::createFramebuffers() {
+void KaguEngine::App::createFramebuffers() {
     swapChainFramebuffers.resize(swapChainImageViews.size());
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
@@ -416,7 +416,7 @@ void Vulkan3DEngine::createFramebuffers() {
     }
 }
 
-void Vulkan3DEngine::createCommandPool() {
+void KaguEngine::App::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
 
     VkCommandPoolCreateInfo poolInfo{};
@@ -429,7 +429,7 @@ void Vulkan3DEngine::createCommandPool() {
     }
 }
 
-void Vulkan3DEngine::createVertexBuffer() {
+void KaguEngine::App::createVertexBuffer() {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = sizeof(vertices[0]) * vertices.size();
@@ -460,7 +460,7 @@ void Vulkan3DEngine::createVertexBuffer() {
     vkUnmapMemory(device, vertexBufferMemory);
 }
 
-void Vulkan3DEngine::createCommandBuffers() {
+void KaguEngine::App::createCommandBuffers() {
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
@@ -474,7 +474,7 @@ void Vulkan3DEngine::createCommandBuffers() {
     }
 }
 
-void Vulkan3DEngine::createSyncObjects() {
+void KaguEngine::App::createSyncObjects() {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);

@@ -1,6 +1,6 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-int Vulkan3DEngine::rateDeviceSuitability(VkPhysicalDevice device) {
+int KaguEngine::App::rateDeviceSuitability(VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     VkPhysicalDeviceFeatures deviceFeatures;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -34,7 +34,7 @@ int Vulkan3DEngine::rateDeviceSuitability(VkPhysicalDevice device) {
     return score;
 }
 
-std::vector<const char*> Vulkan3DEngine::getRequiredExtensions() {
+std::vector<const char*> KaguEngine::App::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -48,7 +48,7 @@ std::vector<const char*> Vulkan3DEngine::getRequiredExtensions() {
     return extensions;
 }
 
-bool Vulkan3DEngine::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool KaguEngine::App::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
