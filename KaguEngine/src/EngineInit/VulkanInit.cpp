@@ -266,8 +266,10 @@ void KaguEngine::App::createRenderPass() {
 }
 
 void KaguEngine::App::createGraphicsPipeline() {
-    auto vertShaderCode = readFile("C:/Users/PC/source/repos/dark-dylan-93220/KaguEngine/KaguEngine/shaders/vert.spv");
-    auto fragShaderCode = readFile("C:/Users/PC/source/repos/dark-dylan-93220/KaguEngine/KaguEngine/shaders/frag.spv");
+    // Path : [Executable]<-Kagu Engine<-[config]<-build<-out<-KaguEngine->KaguEngine->shaders->[file]
+    // So ../../../../[final path]
+    auto vertShaderCode = readFile("../../../../KaguEngine/shaders/vert.spv");
+    auto fragShaderCode = readFile("../../../../KaguEngine/shaders/frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
