@@ -2,7 +2,9 @@
 
 <p align="center"><i>3D Game Engine using Vulkan and GLFW</i></p>
 
-![KaguEngine Logo](Images/KaguEngine_Logo.png)
+<p align="center">
+  <img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo"/>
+</p>
 
 <h2 align="center">Clone the repository</h2>
 

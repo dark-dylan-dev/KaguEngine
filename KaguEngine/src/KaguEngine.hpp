@@ -83,14 +83,15 @@ namespace KaguEngine {
 	const std::vector<Vertex> vertices = {
 		// Syntax : {{posX, posY}, {R, G, B}}
 		// ----------------------------------
-		// 1st triangle
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}}, // Top left vertex     - RED
-		{{0.5f, -0.5f},  {1.0f, 1.0f, 0.0f}}, // Top right vertex    - YELLOW
-		{{0.5f,  0.5f},  {0.0f, 1.0f, 0.0f}}, // Bottom right vertex - GREEN
-		// 2nd triangle
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}}, // Top left vertex     - RED
-		{{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}}, // Bottom right vertex - GREEN
-		{{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}}  // Bottom left vertex  - BLUE
+		// Two combined triangles for a rectangle
+		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	    {{0.5f,  -0.5f}, {0.0f, 1.0f, 0.0f}},
+	    {{0.5f,  0.5f},  {0.0f, 0.0f, 1.0f}},
+	    {{-0.5f, 0.5f},  {1.0f, 1.0f, 1.0f}}
+	};
+
+	const std::vector<uint16_t> indices = {
+		0, 1, 2, 2, 3, 0
 	};
 
 	const uint32_t WIDTH = 800;
@@ -120,7 +121,10 @@ namespace KaguEngine {
 		void createGraphicsPipeline();
 		void createFramebuffers();
 		void createCommandPool();
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void createVertexBuffer();
+		void createIndexBuffer();
 		void createCommandBuffers();
 		void createSyncObjects();
 
@@ -209,6 +213,9 @@ namespace KaguEngine {
 		// Vertex buffers
 		VkBuffer vertexBuffer;
 		VkDeviceMemory vertexBufferMemory;
+		// Index buffers
+		VkBuffer indexBuffer;
+		VkDeviceMemory indexBufferMemory;
 
 		// Semaphores
 		std::vector<VkSemaphore> imageAvailableSemaphores;
