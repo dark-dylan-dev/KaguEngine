@@ -1,6 +1,6 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-bool Vulkan3DEngine::checkValidationLayerSupport() {
+bool KaguEngine::App::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 

@@ -1,6 +1,6 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-SwapChainSupportDetails Vulkan3DEngine::querySwapChainSupport(VkPhysicalDevice device) {
+KaguEngine::SwapChainSupportDetails KaguEngine::App::querySwapChainSupport(VkPhysicalDevice device) {
     SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -24,7 +24,7 @@ SwapChainSupportDetails Vulkan3DEngine::querySwapChainSupport(VkPhysicalDevice d
     return details;
 }
 
-VkSurfaceFormatKHR Vulkan3DEngine::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+VkSurfaceFormatKHR KaguEngine::App::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
@@ -34,7 +34,7 @@ VkSurfaceFormatKHR Vulkan3DEngine::chooseSwapSurfaceFormat(const std::vector<VkS
     return availableFormats[0];
 }
 
-VkPresentModeKHR Vulkan3DEngine::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+VkPresentModeKHR KaguEngine::App::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return availablePresentMode;
@@ -44,7 +44,7 @@ VkPresentModeKHR Vulkan3DEngine::chooseSwapPresentMode(const std::vector<VkPrese
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Vulkan3DEngine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+VkExtent2D KaguEngine::App::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     }
@@ -65,7 +65,7 @@ VkExtent2D Vulkan3DEngine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capa
 }
 
 
-void Vulkan3DEngine::recreateSwapChain() {
+void KaguEngine::App::recreateSwapChain() {
     int width = 0, height = 0;
     glfwGetFramebufferSize(window, &width, &height);
     while (width == 0 || height == 0) {

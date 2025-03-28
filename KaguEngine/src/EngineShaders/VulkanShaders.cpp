@@ -1,6 +1,6 @@
-#include "../Vulkan3DEngine.hpp"
+#include "../KaguEngine.hpp"
 
-std::vector<char> Vulkan3DEngine::readFile(const std::string& filename) {
+std::vector<char> KaguEngine::App::readFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
@@ -18,7 +18,7 @@ std::vector<char> Vulkan3DEngine::readFile(const std::string& filename) {
     return buffer;
 }
 
-VkShaderModule Vulkan3DEngine::createShaderModule(const std::vector<char>& code) {
+VkShaderModule KaguEngine::App::createShaderModule(const std::vector<char>& code) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();

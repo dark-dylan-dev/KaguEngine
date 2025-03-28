@@ -1,23 +1,23 @@
-﻿#include "Vulkan3DEngine.hpp"
+﻿#include "KaguEngine.hpp"
 
-void Vulkan3DEngine::run() {
+void KaguEngine::App::run() {
 	initWindow();
 	initVulkan();
 	mainLoop();
 	cleanup();
 }
 
-void Vulkan3DEngine::initWindow() {
+void KaguEngine::App::initWindow() {
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan 3D Engine", nullptr, nullptr);
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Kagu Engine", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
-void Vulkan3DEngine::initVulkan() {
+void KaguEngine::App::initVulkan() {
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -29,11 +29,13 @@ void Vulkan3DEngine::initVulkan() {
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+    createVertexBuffer();
+    createIndexBuffer();
     createCommandBuffers();
     createSyncObjects();
 }
 
-void Vulkan3DEngine::mainLoop() {
+void KaguEngine::App::mainLoop() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         drawFrame();
