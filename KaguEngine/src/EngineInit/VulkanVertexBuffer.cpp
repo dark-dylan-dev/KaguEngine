@@ -1,6 +1,4 @@
 #include "../KaguEngine.hpp"
-// STB
-#include <stb_image.h>
 
 uint32_t KaguEngine::App::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 	VkPhysicalDeviceMemoryProperties memProperties;

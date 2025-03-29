@@ -109,7 +109,7 @@ namespace KaguEngine {
 	const uint32_t WIDTH = 800;
 	const uint32_t HEIGHT = 600;
 
-	const int MAX_FRAMES_IN_FLIGHT = 3;
+	const int MAX_FRAMES_IN_FLIGHT = 2;
 
 	class App {
 	public:
@@ -162,11 +162,19 @@ namespace KaguEngine {
 		// Queues - VulkanQueues.cpp
 		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
+		// Textures - VulkanTextureGestion.cpp
+		void createTextureImage();
+		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
 		// Shaders - VulkanShaders.cpp
 		static std::vector<char> readFile(const std::string& filename);
 		VkShaderModule createShaderModule(const std::vector<char>& code);
 
 		// Command buffer & Frame rendering - VulkanFrameRendering.cpp
+		VkCommandBuffer beginSingleTimeCommands();
+		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		void drawFrame();
 		void updateUniformBuffer(uint32_t currentImage);
@@ -247,6 +255,10 @@ namespace KaguEngine {
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
+
+		// Textures image
+		VkImage textureImage;
+		VkDeviceMemory textureImageMemory;
 
 		bool framebufferResized = false;
 

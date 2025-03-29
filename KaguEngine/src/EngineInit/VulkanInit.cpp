@@ -1,6 +1,4 @@
 #include "../KaguEngine.hpp"
-// STB
-#include <stb_image.h>
 
 void KaguEngine::App::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
     auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
@@ -286,10 +284,8 @@ void KaguEngine::App::createDescriptorSetLayout() {
 }
 
 void KaguEngine::App::createGraphicsPipeline() {
-    // Path : [Executable]<-Kagu Engine<-[config]<-build<-out<-KaguEngine->KaguEngine->shaders->[file]
-    // So ../../../../[final path]
-    auto vertShaderCode = readFile("../../../../KaguEngine/shaders/vert.spv");
-    auto fragShaderCode = readFile("../../../../KaguEngine/shaders/frag.spv");
+    auto vertShaderCode = readFile("../../shaders/vert.spv");
+    auto fragShaderCode = readFile("../../shaders/frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -479,38 +475,13 @@ void KaguEngine::App::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 }
 
 void KaguEngine::App::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = commandPool;
-    allocInfo.commandBufferCount = 1;
-
-    VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferCopy copyRegion{};
-    copyRegion.srcOffset = 0;
-    copyRegion.dstOffset = 0;
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-    vkEndCommandBuffer(commandBuffer);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(graphicsQueue);
-
-    vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+    endSingleTimeCommands(commandBuffer);
 }
 
 void KaguEngine::App::createVertexBuffer() {

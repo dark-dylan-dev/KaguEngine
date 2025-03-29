@@ -1,6 +1,4 @@
 #include "../KaguEngine.hpp"
-// STB
-#include <stb_image.h>
 
 void KaguEngine::App::cleanupSwapChain() {
     for (auto framebuffer : swapChainFramebuffers) {
@@ -16,6 +14,9 @@ void KaguEngine::App::cleanupSwapChain() {
 
 void KaguEngine::App::cleanup() {
     cleanupSwapChain();
+
+    vkDestroyImage(device, textureImage, nullptr);
+    vkFreeMemory(device, textureImageMemory, nullptr);
 
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);

@@ -1,6 +1,4 @@
 #include "../KaguEngine.hpp"
-// STB
-#include <stb_image.h>
 
 std::vector<char> KaguEngine::App::readFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);

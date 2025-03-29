@@ -1,6 +1,4 @@
 #include "../KaguEngine.hpp"
-// STB
-#include <stb_image.h>
 
 KaguEngine::QueueFamilyIndices KaguEngine::App::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
