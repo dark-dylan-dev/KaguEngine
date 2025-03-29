@@ -4,7 +4,10 @@
 #define GLFW_INCLUDE_VULKAN // Tell GLFW we want to include Vulkan
 #include <GLFW/glfw3.h>     // GLFW
 // GLM
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 // STL
 #include <iostream>  // Console output & input
 #include <cstdlib>   // C STL
@@ -19,6 +22,7 @@
 #include <fstream>   // To load shaders
 #include <cstring>   // To use strcmp()
 #include <array>     // To describe the attributes of a vertex
+#include <chrono>    // To keep precise timing when updating uniform buffers
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -94,6 +98,12 @@ namespace KaguEngine {
 		0, 1, 2, 2, 3, 0
 	};
 
+	struct UniformBufferObject {
+		alignas(16) glm::mat4 model;
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+	};
+
 	const uint32_t WIDTH = 800;
 	const uint32_t HEIGHT = 600;
 
@@ -118,6 +128,7 @@ namespace KaguEngine {
 		void createSwapChain();
 		void createImageViews();
 		void createRenderPass();
+		void createDescriptorSetLayout();
 		void createGraphicsPipeline();
 		void createFramebuffers();
 		void createCommandPool();
@@ -125,6 +136,9 @@ namespace KaguEngine {
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void createVertexBuffer();
 		void createIndexBuffer();
+		void createUniformBuffers();
+		void createDescriptorPool();
+		void createDescriptorSets();
 		void createCommandBuffers();
 		void createSyncObjects();
 
@@ -153,6 +167,7 @@ namespace KaguEngine {
 		// Command buffer & Frame rendering - VulkanFrameRendering.cpp
 		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		void drawFrame();
+		void updateUniformBuffer(uint32_t currentImage);
 
 		// Vertex buffer construction
 		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -203,6 +218,11 @@ namespace KaguEngine {
 		VkPipelineLayout pipelineLayout;
 		VkPipeline graphicsPipeline;
 
+		// Descriptor sets
+		VkDescriptorSetLayout descriptorSetLayout;
+		VkDescriptorPool descriptorPool;
+		std::vector<VkDescriptorSet> descriptorSets;
+
 		// Framebuffer
 		std::vector<VkFramebuffer> swapChainFramebuffers;
 
@@ -216,6 +236,10 @@ namespace KaguEngine {
 		// Index buffers
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
+		// Uniform buffers
+		std::vector<VkBuffer> uniformBuffers;
+		std::vector<VkDeviceMemory> uniformBuffersMemory;
+		std::vector<void*> uniformBuffersMapped;
 
 		// Semaphores
 		std::vector<VkSemaphore> imageAvailableSemaphores;
