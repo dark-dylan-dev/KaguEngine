@@ -1,9 +1,9 @@
 <h1 align="center">Kagu Engine</h1>
 
-<p align="center"><i>3D Game Engine using Vulkan and GLFW</i></p>
+<p align="center"><i>3D Game Engine using Vulkan</i></p>
 
 <p align="center">
-  <img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo"/>
+  <img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo"/ width=400 height=400>
 </p>
 
 <h2 align="center">Clone the repository</h2>
@@ -15,16 +15,21 @@ cd path/to/repo
 
 Then, clone the repository :
 ```bash
-git clone https://github.com/dark-dylan-93220/KaguEngine
+git clone --recursive https://github.com/dark-dylan-93220/KaguEngine
 cd KaguEngine
 ```
+Don't forget the `--recursive` flag as it adds the stb submodule from [nothings/stb](https://github.com/nothings/stb), used to treat textures inside of KaguEngine.
 
-To update the repository to the latest commit, run :
+To update the repository to the latest commit :
+ - First make sure that you are in the right directory :
+```bash
+cd path/to/repo
+```
+ - Then, run :
 ```bash
 git checkout master
 git pull
 ```
-Inside of the `KaguEngine` directory.
 
 <h2 align="center">Project dependencies</h2>
 
@@ -42,8 +47,21 @@ First, move to the directory where the repository is located at :
 ```bash
 cd path/to/repo
 ```
-
-<p align="center"><i>Still have to write the build command line...</i></p>
+Then, make sure that, depending on your OS, you have all the dependencies installed :
+ - Linux (using apt) :
+```bash
+sudo apt-get update
+sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
+```
+ - Linux (using pacman) :
+```bash
+sudo pacman -Syu
+sudo pacman -S --noconfirm libxkbcommon xorg-xinerama xorg-xcursor libxi mesa
+```
+Once this is all done, you can use CMake to build the project :
+```bash
+cmake --build path/to/build
+```
 
 <h2 align="center">Contributing</h2>
 

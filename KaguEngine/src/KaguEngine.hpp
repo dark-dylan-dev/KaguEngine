@@ -90,10 +90,10 @@ namespace KaguEngine {
 		// Syntax : {{posX, posY}, {R, G, B}}
 		// ----------------------------------
 		// Two combined triangles for a rectangle
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	    {{0.5f,  -0.5f}, {0.0f, 1.0f, 0.0f}},
-	    {{0.5f,  0.5f},  {0.0f, 0.0f, 1.0f}},
-	    {{-0.5f, 0.5f},  {1.0f, 1.0f, 1.0f}}
+		{{-0.5f, -0.5f}, {1.0f, 0.0f,  0.0f}},
+	    {{0.5f,  -0.5f}, {0.0f, 1.0f,  0.0f}},
+	    {{0.5f,  0.5f},  {0.0f, 0.0f,  1.0f}},
+	    {{-0.5f, 0.5f},  {0.9f, 0.33f, 0.5f}}
 	};
 
 	const std::vector<uint16_t> indices = {
