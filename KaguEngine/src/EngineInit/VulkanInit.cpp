@@ -1,4 +1,6 @@
 #include "../KaguEngine.hpp"
+// STB
+#include <stb_image.h>
 
 void KaguEngine::App::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
     auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));

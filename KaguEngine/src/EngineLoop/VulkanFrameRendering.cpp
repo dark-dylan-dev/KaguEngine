@@ -1,4 +1,6 @@
 #include "../KaguEngine.hpp"
+// STB
+#include <stb_image.h>
 
 void KaguEngine::App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     VkCommandBufferBeginInfo beginInfo{};

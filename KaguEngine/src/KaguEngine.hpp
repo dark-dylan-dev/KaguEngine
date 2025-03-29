@@ -1,13 +1,15 @@
 ﻿#pragma once
 
 // GLFW / Vulkan
-#define GLFW_INCLUDE_VULKAN // Tell GLFW we want to include Vulkan
-#include <GLFW/glfw3.h>     // GLFW
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 // GLM
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
+
 // STL
 #include <iostream>  // Console output & input
 #include <cstdlib>   // C STL

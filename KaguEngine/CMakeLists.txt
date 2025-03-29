@@ -17,6 +17,9 @@ add_subdirectory(extern/glm)
 target_include_directories(KaguEngine PRIVATE extern/glm)
 target_link_libraries(KaguEngine PRIVATE glm)
 
+# Adding stb
+target_include_directories(KaguEngine PRIVATE extern/stb)
+
 # Adding Vulkan
 find_package(Vulkan REQUIRED)
 if(NOT Vulkan_FOUND)

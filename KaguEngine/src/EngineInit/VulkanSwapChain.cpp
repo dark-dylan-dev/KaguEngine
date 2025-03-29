@@ -1,4 +1,6 @@
 #include "../KaguEngine.hpp"
+// STB
+#include <stb_image.h>
 
 KaguEngine::SwapChainSupportDetails KaguEngine::App::querySwapChainSupport(VkPhysicalDevice device) {
     SwapChainSupportDetails details;
