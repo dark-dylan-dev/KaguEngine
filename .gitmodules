@@ -1,0 +1,3 @@
+[submodule "KaguEngine/extern/stb"]
+	path = KaguEngine/extern/stb
+	url = https://github.com/nothings/stb
