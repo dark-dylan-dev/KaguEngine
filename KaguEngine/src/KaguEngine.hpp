@@ -1,13 +1,15 @@
 ﻿#pragma once
 
 // GLFW / Vulkan
-#define GLFW_INCLUDE_VULKAN // Tell GLFW we want to include Vulkan
-#include <GLFW/glfw3.h>     // GLFW
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 // GLM
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
+
 // STL
 #include <iostream>  // Console output & input
 #include <cstdlib>   // C STL
@@ -57,10 +59,10 @@ namespace KaguEngine {
 	struct Vertex {
 		glm::vec2 pos;
 		glm::vec3 color;
+		glm::vec2 texCoord;
 
 		static VkVertexInputBindingDescription getBindingDescription() {
 			VkVertexInputBindingDescription bindingDescription{};
-
 			bindingDescription.binding = 0;
 			bindingDescription.stride = sizeof(Vertex);
 			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -68,17 +70,23 @@ namespace KaguEngine {
 			return bindingDescription;
 		}
 
-		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-			std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+		static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+			std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
 			attributeDescriptions[0].binding = 0;
 			attributeDescriptions[0].location = 0;
 			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
 			attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
 			attributeDescriptions[1].binding = 0;
 			attributeDescriptions[1].location = 1;
 			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 			attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+			attributeDescriptions[2].binding = 0;
+			attributeDescriptions[2].location = 2;
+			attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
 			return attributeDescriptions;
 		}
@@ -88,10 +96,10 @@ namespace KaguEngine {
 		// Syntax : {{posX, posY}, {R, G, B}}
 		// ----------------------------------
 		// Two combined triangles for a rectangle
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	    {{0.5f,  -0.5f}, {0.0f, 1.0f, 0.0f}},
-	    {{0.5f,  0.5f},  {0.0f, 0.0f, 1.0f}},
-	    {{-0.5f, 0.5f},  {1.0f, 1.0f, 1.0f}}
+		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+		{{0.5f,  -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+		{{0.5f,  0.5f},  {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+		{{-0.5f, 0.5f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 	};
 
 	const std::vector<uint16_t> indices = {
@@ -107,7 +115,7 @@ namespace KaguEngine {
 	const uint32_t WIDTH = 800;
 	const uint32_t HEIGHT = 600;
 
-	const int MAX_FRAMES_IN_FLIGHT = 3;
+	const int MAX_FRAMES_IN_FLIGHT = 2;
 
 	class App {
 	public:
@@ -160,11 +168,22 @@ namespace KaguEngine {
 		// Queues - VulkanQueues.cpp
 		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
+		// Textures - VulkanTextureGestion.cpp
+		void createTextureImage();
+		VkImageView createImageView(VkImage image, VkFormat format);
+		void createTextureImageView();
+		void createTextureSampler();
+		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
 		// Shaders - VulkanShaders.cpp
 		static std::vector<char> readFile(const std::string& filename);
 		VkShaderModule createShaderModule(const std::vector<char>& code);
 
 		// Command buffer & Frame rendering - VulkanFrameRendering.cpp
+		VkCommandBuffer beginSingleTimeCommands();
+		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		void drawFrame();
 		void updateUniformBuffer(uint32_t currentImage);
@@ -192,6 +211,9 @@ namespace KaguEngine {
 	private:
 		// GLFW window
 		GLFWwindow* window;
+
+		// Vulkan viewport
+		bool framebufferResized = false;
 
 		// Vulkan debugger
 		VkDebugUtilsMessengerEXT debugMessenger;
@@ -246,7 +268,11 @@ namespace KaguEngine {
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
 
-		bool framebufferResized = false;
+		// Textures image
+		VkImage textureImage;
+		VkDeviceMemory textureImageMemory;
+		VkImageView textureImageView;
+		VkSampler textureSampler;
 
 		// Index to count frames in flight
 		uint32_t currentFrame = 0;
