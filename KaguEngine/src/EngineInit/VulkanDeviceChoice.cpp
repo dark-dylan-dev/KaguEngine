@@ -3,6 +3,8 @@
 int KaguEngine::App::rateDeviceSuitability(VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     VkPhysicalDeviceFeatures deviceFeatures;
+    VkPhysicalDeviceFeatures supportedFeatures;
+    vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
     vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
@@ -26,8 +28,8 @@ int KaguEngine::App::rateDeviceSuitability(VkPhysicalDevice device) {
     // Maximum possible size of textures affects graphics quality
     score += deviceProperties.limits.maxImageDimension2D;
 
-    // Application can't function without geometry shaders and compatibility
-    if (!deviceFeatures.geometryShader || !indices.isComplete() || !extensionsSupported || !swapChainAdequate) {
+    // Application can't function without geometry shaders, compatibility and sampler anisotropy
+    if (!deviceFeatures.geometryShader || !indices.isComplete() || !extensionsSupported || !swapChainAdequate || !supportedFeatures.samplerAnisotropy) {
         return 0;
     }
 
