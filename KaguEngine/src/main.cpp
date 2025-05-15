@@ -1,9 +1,8 @@
 #include "KaguEngine.hpp"
 
 int main() {
-	KaguEngine::App Engine;
-
 	try {
+		KaguEngine::App Engine;
 		Engine.run();
 	}
 	catch (std::exception& error) {

@@ -1,12 +1,12 @@
 #include "../KaguEngine.hpp"
 
 void KaguEngine::App::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<App*>(glfwGetWindowUserPointer(window));
+    const auto app = static_cast<App*>(glfwGetWindowUserPointer(window));
     app->framebufferResized = true;
 }
 
 void KaguEngine::App::createInstance() {
-    if (enableValidationLayers && !checkValidationLayerSupport()) {
+    if constexpr (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
 
@@ -273,8 +273,8 @@ void KaguEngine::App::createDescriptorSetLayout() {
 }
 
 void KaguEngine::App::createGraphicsPipeline() {
-    auto vertShaderCode = readFile("../../shaders/vert.spv");
-    auto fragShaderCode = readFile("../../shaders/frag.spv");
+    auto vertShaderCode = readFile("../../KaguEngine/shaders/vert.spv");
+    auto fragShaderCode = readFile("../../KaguEngine/shaders/frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);

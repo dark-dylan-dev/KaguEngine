@@ -5,7 +5,23 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Adding an executable
-add_executable(KaguEngine "src/KaguEngine.hpp" "src/KaguEngine.cpp" "src/main.cpp" "src/EngineInit/VulkanInit.cpp" "src/EngineInit/VulkanDebugger.cpp" "src/EngineInit/VulkanSwapChain.cpp" "src/EngineInit/VulkanDeviceChoice.cpp" "src/EngineShaders/VulkanShaders.cpp" "src/EngineLoop/VulkanFrameRendering.cpp" "src/EngineInit/VulkanQueues.cpp" "src/EngineCleanup/VulkanCleanup.cpp" "src/EngineInit/VulkanValidationLayers.cpp" "src/EngineInit/VulkanVertexBuffer.cpp" "src/EngineTextures/VulkanTextureGestion.cpp")
+add_executable(KaguEngine src/main.cpp)
+target_sources(KaguEngine
+        PRIVATE
+        src/KaguEngine.hpp
+        src/KaguEngine.cpp
+        src/EngineInit/VulkanInit.cpp
+        src/EngineInit/VulkanDebugger.cpp
+        src/EngineInit/VulkanDeviceChoice.cpp
+        src/EngineInit/VulkanQueues.cpp
+        src/EngineInit/VulkanSwapChain.cpp
+        src/EngineInit/VulkanValidationLayers.cpp
+        src/EngineInit/VulkanVertexBuffer.cpp
+        src/EngineShaders/VulkanShaders.cpp
+        src/EngineTextures/VulkanTextureGestion.cpp
+        src/EngineLoop/VulkanFrameRendering.cpp
+        src/EngineCleanup/VulkanCleanup.cpp
+)
 
 # Adding GLFW
 add_subdirectory(extern/glfw)
@@ -19,6 +35,9 @@ target_link_libraries(KaguEngine PRIVATE glm)
 
 # Adding stb
 target_include_directories(KaguEngine PRIVATE extern/stb)
+
+# Adding tinyobjloader
+target_include_directories(KaguEngine PRIVATE extern/tinyobj)
 
 # Adding Vulkan
 find_package(Vulkan REQUIRED)

@@ -27,9 +27,9 @@
 #include <chrono>    // To keep precise timing when updating uniform buffers
 
 #ifdef NDEBUG
-const bool enableValidationLayers = false;
+constexpr bool enableValidationLayers = false;
 #else
-const bool enableValidationLayers = true;
+constexpr bool enableValidationLayers = true;
 #endif
 
 namespace KaguEngine {
@@ -38,7 +38,7 @@ namespace KaguEngine {
 		std::optional<uint32_t> graphicsFamily;
 		std::optional<uint32_t> presentFamily;
 
-		bool isComplete() const {
+		[[nodiscard]] bool isComplete() const {
 			return graphicsFamily.has_value() && presentFamily.has_value();
 		}
 	};
@@ -112,10 +112,10 @@ namespace KaguEngine {
 		alignas(16) glm::mat4 proj;
 	};
 
-	const uint32_t WIDTH = 800;
-	const uint32_t HEIGHT = 600;
+	constexpr uint32_t WIDTH = 800;
+	constexpr uint32_t HEIGHT = 600;
 
-	const int MAX_FRAMES_IN_FLIGHT = 2;
+	constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 	class App {
 	public:
@@ -276,6 +276,6 @@ namespace KaguEngine {
 
 		// Index to count frames in flight
 		uint32_t currentFrame = 0;
-	};
+	}; // Class App
 
-}
+} // KaguEngine::

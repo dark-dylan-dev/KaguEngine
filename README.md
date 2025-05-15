@@ -3,7 +3,7 @@
 <p align="center"><i>3D Game Engine using Vulkan</i></p>
 
 <p align="center">
-  <img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo"/ width=400 height=400>
+  <img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo" width=400 height=400/>
 </p>
 
 <h2 align="center">Clone the repository</h2>
@@ -18,13 +18,10 @@ Then, clone the repository :
 git clone --recursive https://github.com/dark-dylan-93220/KaguEngine
 cd KaguEngine
 ```
-Don't forget the `--recursive` flag as it adds the stb submodule from [nothings/stb](https://github.com/nothings/stb), used to treat textures inside of KaguEngine.
+Don't forget the `--recursive` flag as it adds the stb submodule from [nothings/stb](https://github.com/nothings/stb), used to treat textures inside KaguEngine.
 
 To update the repository to the latest commit :
- - First make sure that you are in the right directory :
-```bash
-cd path/to/repo
-```
+ - First make sure that you are in the `KaguEngine/` directory.
  - Then, run :
 ```bash
 git checkout master
@@ -60,6 +57,7 @@ sudo pacman -S --noconfirm libxkbcommon xorg-xinerama xorg-xcursor libxi mesa
 ```
 Once this is all done, you can use CMake to build the project :
 ```bash
+cmake -B path/to/build
 cmake --build path/to/build
 ```
 
