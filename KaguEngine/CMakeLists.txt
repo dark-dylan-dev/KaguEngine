@@ -37,7 +37,7 @@ target_link_libraries(KaguEngine PRIVATE glm)
 target_include_directories(KaguEngine PRIVATE extern/stb)
 
 # Adding tinyobjloader
-target_include_directories(KaguEngine PRIVATE extern/tinyobj)
+target_include_directories(KaguEngine PRIVATE extern/tinyobjloader)
 
 # Adding Vulkan
 find_package(Vulkan REQUIRED)
