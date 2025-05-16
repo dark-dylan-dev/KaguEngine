@@ -1,12 +1,12 @@
 [submodule "KaguEngine/extern/glfw"]
-    path = KaguEngine/extern/glfw
-    url = https://github.com/glfw/glfw
-[submodule "KaguEngine/extern/glm"]
-    path = KaguEngine/extern/glm
-    url = https://github.com/icaven/glm
+	path = KaguEngine/extern/glfw
+	url = https://github.com/glfw/glfw
 [submodule "KaguEngine/extern/stb"]
-	path = KaguEngine/extern/stb
-	url = https://github.com/nothings/stb
+    path = KaguEngine/extern/stb
+    url = https://github.com/nothings/stb
 [submodule "KaguEngine/extern/tinyobj"]
-	path = KaguEngine/extern/tinyobj
-	url = https://github.com/tinyobjloader/tinyobjloader
+    path = KaguEngine/extern/tinyobj
+    url = https://github.com/tinyobjloader/tinyobjloader
+[submodule "KaguEngine/extern/glm"]
+	path = KaguEngine/extern/glm
+	url = https://github.com/icaven/glm
