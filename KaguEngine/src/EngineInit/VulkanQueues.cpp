@@ -1,6 +1,6 @@
 #include "../KaguEngine.hpp"
 
-KaguEngine::QueueFamilyIndices KaguEngine::App::findQueueFamilies(VkPhysicalDevice device) {
+KaguEngine::QueueFamilyIndices KaguEngine::App::findQueueFamilies(const VkPhysicalDevice device) const {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;

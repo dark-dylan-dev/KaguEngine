@@ -7,7 +7,7 @@
 void KaguEngine::App::createTextureImage() {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load("../../KaguEngine/textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
+    const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {
         throw std::runtime_error("Failed to load texture image!");
@@ -34,7 +34,7 @@ void KaguEngine::App::createTextureImage() {
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-VkImageView KaguEngine::App::createImageView(VkImage image, VkFormat format) {
+VkImageView KaguEngine::App::createImageView(const VkImage image, const VkFormat format) const {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
@@ -85,7 +85,7 @@ void KaguEngine::App::createTextureSampler() {
     }
 }
 
-void KaguEngine::App::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+void KaguEngine::App::createImage(const uint32_t width, const uint32_t height, const VkFormat format, const VkImageTiling tiling, const VkImageUsageFlags usage, const VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -120,8 +120,8 @@ void KaguEngine::App::createImage(uint32_t width, uint32_t height, VkFormat form
     vkBindImageMemory(device, image, imageMemory, 0);
 }
 
-void KaguEngine::App::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+void KaguEngine::App::transitionImageLayout(const VkImage image, VkFormat format, const VkImageLayout oldLayout, const VkImageLayout newLayout) const {
+    const VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -169,8 +169,8 @@ void KaguEngine::App::transitionImageLayout(VkImage image, VkFormat format, VkIm
     endSingleTimeCommands(commandBuffer);
 }
 
-void KaguEngine::App::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+void KaguEngine::App::copyBufferToImage(const VkBuffer buffer, const VkImage image, const uint32_t width, const uint32_t height) const {
+    const VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;

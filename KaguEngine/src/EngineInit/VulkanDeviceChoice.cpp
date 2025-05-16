@@ -1,6 +1,6 @@
 #include "../KaguEngine.hpp"
 
-int KaguEngine::App::rateDeviceSuitability(VkPhysicalDevice device) {
+int KaguEngine::App::rateDeviceSuitability(VkPhysicalDevice device) const {
     VkPhysicalDeviceProperties deviceProperties;
     VkPhysicalDeviceFeatures deviceFeatures;
     VkPhysicalDeviceFeatures supportedFeatures;
@@ -18,7 +18,7 @@ int KaguEngine::App::rateDeviceSuitability(VkPhysicalDevice device) {
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 
-    int score = 0;
+    uint32_t score = 0;
 
     // Discrete GPUs have a significant performance advantage
     if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
@@ -38,8 +38,7 @@ int KaguEngine::App::rateDeviceSuitability(VkPhysicalDevice device) {
 
 std::vector<const char*> KaguEngine::App::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
@@ -59,8 +58,8 @@ bool KaguEngine::App::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 
     std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-    for (const auto& extension : availableExtensions) {
-        requiredExtensions.erase(extension.extensionName);
+    for (const auto&[extensionName, specVersion] : availableExtensions) {
+        requiredExtensions.erase(extensionName);
     }
 
     return requiredExtensions.empty();

@@ -1,6 +1,6 @@
 #include "../KaguEngine.hpp"
 
-VkCommandBuffer KaguEngine::App::beginSingleTimeCommands() {
+VkCommandBuffer KaguEngine::App::beginSingleTimeCommands() const {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -19,7 +19,7 @@ VkCommandBuffer KaguEngine::App::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void KaguEngine::App::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void KaguEngine::App::endSingleTimeCommands(const VkCommandBuffer commandBuffer) const {
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo{};
@@ -33,7 +33,7 @@ void KaguEngine::App::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-void KaguEngine::App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void KaguEngine::App::recordCommandBuffer(const VkCommandBuffer commandBuffer, const uint32_t imageIndex) const {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -48,7 +48,7 @@ void KaguEngine::App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = swapChainExtent;
 
-    VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+    constexpr VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
@@ -70,8 +70,8 @@ void KaguEngine::App::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_
         scissor.extent = swapChainExtent;
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        VkBuffer vertexBuffers[] = { vertexBuffer };
-        VkDeviceSize offsets[] = { 0 };
+        const VkBuffer vertexBuffers[] = { vertexBuffer };
+        constexpr VkDeviceSize offsets[] = { 0 };
 
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
@@ -110,8 +110,8 @@ void KaguEngine::App::drawFrame() {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    const VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+    constexpr VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -119,7 +119,7 @@ void KaguEngine::App::drawFrame() {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
-    VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
+    const VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -133,7 +133,7 @@ void KaguEngine::App::drawFrame() {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = { swapChain };
+    const VkSwapchainKHR swapChains[] = { swapChain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
 
@@ -152,7 +152,7 @@ void KaguEngine::App::drawFrame() {
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void KaguEngine::App::updateUniformBuffer(uint32_t currentImage) {
+void KaguEngine::App::updateUniformBuffer(const uint32_t currentImage) const {
     static auto startTime = std::chrono::high_resolution_clock::now();
 
     const auto currentTime = std::chrono::high_resolution_clock::now();

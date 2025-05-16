@@ -1,18 +1,18 @@
 #include "../KaguEngine.hpp"
 
-void KaguEngine::App::cleanupSwapChain() {
-    for (auto framebuffer : swapChainFramebuffers) {
+void KaguEngine::App::cleanupSwapChain() const {
+    for (const auto framebuffer : swapChainFramebuffers) {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
 
-    for (auto imageView : swapChainImageViews) {
+    for (const auto imageView : swapChainImageViews) {
         vkDestroyImageView(device, imageView, nullptr);
     }
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
-void KaguEngine::App::cleanup() {
+void KaguEngine::App::cleanup() const {
     cleanupSwapChain();
 
 

@@ -1,6 +1,6 @@
 #include "../KaguEngine.hpp"
 
-KaguEngine::SwapChainSupportDetails KaguEngine::App::querySwapChainSupport(VkPhysicalDevice device) {
+KaguEngine::SwapChainSupportDetails KaguEngine::App::querySwapChainSupport(const VkPhysicalDevice device) const {
     SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -44,7 +44,7 @@ VkPresentModeKHR KaguEngine::App::chooseSwapPresentMode(const std::vector<VkPres
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D KaguEngine::App::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+VkExtent2D KaguEngine::App::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     }

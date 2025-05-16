@@ -7,8 +7,8 @@
 // GLM
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 // STL
 #include <iostream>  // Console output & input
@@ -140,7 +140,7 @@ namespace KaguEngine {
 		void createGraphicsPipeline();
 		void createFramebuffers();
 		void createCommandPool();
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;
 		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void createVertexBuffer();
 		void createIndexBuffer();
@@ -151,62 +151,62 @@ namespace KaguEngine {
 		void createSyncObjects();
 
 		// Validation layers - VulkanValidationLayers.cpp
-		bool checkValidationLayerSupport();
+		static bool checkValidationLayerSupport();
 
 		// Choosing devices - VulkanDeviceChoice.cpp
-		int rateDeviceSuitability(VkPhysicalDevice device);
-		std::vector<const char*> getRequiredExtensions();
-		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+		int rateDeviceSuitability(VkPhysicalDevice device) const;
+		static std::vector<const char*> getRequiredExtensions();
+		static bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
 		// Swap chain - VulkanSwapChain.cpp
 		void recreateSwapChain();
-		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-		VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) const;
+		static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		[[nodiscard]] VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
 
 		// Queues - VulkanQueues.cpp
-		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+		QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
 
 		// Textures - VulkanTextureGestion.cpp
 		void createTextureImage();
-		VkImageView createImageView(VkImage image, VkFormat format);
+		VkImageView createImageView(VkImage image, VkFormat format) const;
 		void createTextureImageView();
 		void createTextureSampler();
-		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const;
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) const;
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const;
 
 		// Shaders - VulkanShaders.cpp
 		static std::vector<char> readFile(const std::string& filename);
-		VkShaderModule createShaderModule(const std::vector<char>& code);
+		[[nodiscard]] VkShaderModule createShaderModule(const std::vector<char>& code) const;
 
 		// Command buffer & Frame rendering - VulkanFrameRendering.cpp
-		VkCommandBuffer beginSingleTimeCommands();
-		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+		[[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const;
+		void endSingleTimeCommands(VkCommandBuffer commandBuffer) const;
+		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) const;
 		void drawFrame();
-		void updateUniformBuffer(uint32_t currentImage);
+		void updateUniformBuffer(uint32_t currentImage) const;
 
 		// Vertex buffer construction
-		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		[[nodiscard]] uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
-		// Debug functionnalities - VulkanDebugger.cpp
-		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
+		// Debug functionalities - VulkanDebugger.cpp
+		static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData);
-		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+		static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+		static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
 		// Main loop - KaguEngine.cpp
 		void mainLoop();
 
 		// Clean up - VulkanCleanup.cpp
-		void cleanupSwapChain();
-		void cleanup();
+		void cleanupSwapChain() const;
+		void cleanup() const;
 
 	private:
 		// GLFW window
