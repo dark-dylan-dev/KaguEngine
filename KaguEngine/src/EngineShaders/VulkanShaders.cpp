@@ -7,7 +7,7 @@ std::vector<char> KaguEngine::App::readFile(const std::string& filename) {
         throw std::runtime_error("Failed to open file at : " + filename);
     }
 
-    size_t fileSize = (size_t)file.tellg();
+    const size_t fileSize = static_cast<size_t>(file.tellg());
     std::vector<char> buffer(fileSize);
 
     file.seekg(0);
@@ -18,7 +18,7 @@ std::vector<char> KaguEngine::App::readFile(const std::string& filename) {
     return buffer;
 }
 
-VkShaderModule KaguEngine::App::createShaderModule(const std::vector<char>& code) {
+VkShaderModule KaguEngine::App::createShaderModule(const std::vector<char>& code) const {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
