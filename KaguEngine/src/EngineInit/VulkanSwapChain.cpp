@@ -79,5 +79,6 @@ void KaguEngine::App::recreateSwapChain() {
 
     createSwapChain();
     createImageViews();
+    createDepthResources();
     createFramebuffers();
 }
