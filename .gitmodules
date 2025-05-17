@@ -4,9 +4,6 @@
 [submodule "KaguEngine/extern/stb"]
     path = KaguEngine/extern/stb
     url = https://github.com/nothings/stb
-[submodule "KaguEngine/extern/glm"]
-	path = KaguEngine/extern/glm
-	url = https://github.com/g-truc/glm
 [submodule "KaguEngine/extern/tinyobjloader"]
 	path = KaguEngine/extern/tinyobjloader
 	url = https://github.com/tinyobjloader/tinyobjloader
