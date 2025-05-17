@@ -1,6 +1,6 @@
 <h1 align="center">Kagu Engine</h1>
 
-<p align="center"><i>3D Game Engine using Vulkan</i></p>
+<p align="center"><i>3D Game Engine made with Vulkan</i></p>
 
 <p align="center">
   <img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo" width=400 height=400/>

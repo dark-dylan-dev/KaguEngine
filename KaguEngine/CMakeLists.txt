@@ -29,9 +29,7 @@ target_include_directories(KaguEngine PRIVATE extern/glfw/include)
 target_link_libraries(KaguEngine PRIVATE glfw)
 
 # Adding GLM
-add_subdirectory(extern/glm)
 target_include_directories(KaguEngine PRIVATE extern/glm)
-target_link_libraries(KaguEngine PRIVATE glm)
 
 # Adding stb
 target_include_directories(KaguEngine PRIVATE extern/stb)

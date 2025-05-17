@@ -363,4 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Jetbrains' .idea folder
-.idea/
+/.idea/
+/CMakeFiles/
