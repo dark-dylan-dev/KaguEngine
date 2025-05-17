@@ -6,7 +6,7 @@
 
 void KaguEngine::App::createTextureImage() {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("../../KaguEngine/textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {
@@ -34,13 +34,13 @@ void KaguEngine::App::createTextureImage() {
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-VkImageView KaguEngine::App::createImageView(const VkImage image, const VkFormat format) const {
+VkImageView KaguEngine::App::createImageView(const VkImage image, const VkFormat format, const VkImageAspectFlags aspectFlags) const {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = format;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -55,7 +55,7 @@ VkImageView KaguEngine::App::createImageView(const VkImage image, const VkFormat
 }
 
 void KaguEngine::App::createTextureImageView() {
-    textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+    textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void KaguEngine::App::createTextureSampler() {
