@@ -1,6 +1,10 @@
 #include "../KaguEngine.hpp"
 
 void KaguEngine::App::cleanupSwapChain() const {
+    vkDestroyImageView(device, depthImageView, nullptr);
+    vkDestroyImage(device, depthImage, nullptr);
+    vkFreeMemory(device, depthImageMemory, nullptr);
+
     for (const auto framebuffer : swapChainFramebuffers) {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
@@ -14,7 +18,6 @@ void KaguEngine::App::cleanupSwapChain() const {
 
 void KaguEngine::App::cleanup() const {
     cleanupSwapChain();
-
 
     vkDestroySampler(device, textureSampler, nullptr);
     vkDestroyImageView(device, textureImageView, nullptr);
