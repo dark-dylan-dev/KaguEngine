@@ -2,8 +2,8 @@
 	path = KaguEngine/extern/glfw
 	url = https://github.com/glfw/glfw
 [submodule "KaguEngine/extern/stb"]
-    path = KaguEngine/extern/stb
-    url = https://github.com/nothings/stb
+	path = KaguEngine/extern/stb
+	url = https://github.com/nothings/stb
 [submodule "KaguEngine/extern/tinyobjloader"]
 	path = KaguEngine/extern/tinyobjloader
 	url = https://github.com/tinyobjloader/tinyobjloader

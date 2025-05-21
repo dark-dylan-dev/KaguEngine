@@ -76,16 +76,19 @@ struct Vertex {
 	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
 		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
+		// Position - glm::vec3
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
+		// Color - glm::vec3
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[1].offset = offsetof(Vertex, color);
 
+		// TexCoord - glm::vec2
 		attributeDescriptions[2].binding = 0;
 		attributeDescriptions[2].location = 2;
 		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
@@ -99,8 +102,8 @@ struct Vertex {
 	}
 };
 
-inline std::string TEXTURE_PATH = "../../KaguEngine/textures/viking_room.png";
-inline std::string MODEL_PATH = "../../KaguEngine/models/viking_room.obj";
+inline std::string TEXTURE_PATH = "assets/textures/viking_room.png";
+inline std::string MODEL_PATH = "assets/models/viking_room.obj";
 
 struct UniformBufferObject {
 	alignas(16) glm::mat4 model;
@@ -136,6 +139,7 @@ private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
 	void createCommandPool();
+	void createColorResources();
 	void createDepthResources();
 	void createFramebuffers();
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;
@@ -176,12 +180,15 @@ private:
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) const;
 	void createTextureImageView();
 	void createTextureSampler();
-	void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const;
+	void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const;
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels) const;
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const;
 
 	// Mipmaps - VulkanTextureGestion.cpp
 	void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) const;
+
+	// Multisampling - VulkanMSAAInit.cpp
+	VkSampleCountFlagBits getMaxUsableSampleCount() const;
 
 	// Shaders - VulkanShaders.cpp
 	static std::vector<char> readFile(const std::string& filename);
@@ -259,10 +266,15 @@ private:
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
 
-	// Depth
+	// Depth buffers
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
+
+	// Multisampling buffers
+	VkImage colorImage;
+	VkDeviceMemory colorImageMemory;
+	VkImageView colorImageView;
 
 	// Vertex buffers
 	VkBuffer vertexBuffer;
@@ -282,6 +294,9 @@ private:
 
 	// Mipmaps
 	uint32_t mipLevels;
+
+	// Multisampling
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
 	// Textures image
 	VkImage textureImage;
