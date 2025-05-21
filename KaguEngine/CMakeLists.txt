@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Adding an executable
-add_executable(KaguEngine src/main.cpp
-        src/EngineInit/VulkanMSAAInit.cpp)
+add_executable(KaguEngine
+        src/main.cpp)
 target_sources(KaguEngine
         PRIVATE
         src/KaguEngine.hpp
@@ -14,6 +14,7 @@ target_sources(KaguEngine
         src/EngineInit/VulkanInit.cpp
         src/EngineInit/VulkanDebugger.cpp
         src/EngineInit/VulkanDeviceChoice.cpp
+        src/EngineInit/VulkanMSAAInit.cpp
         src/EngineInit/VulkanQueues.cpp
         src/EngineInit/VulkanSwapChain.cpp
         src/EngineInit/VulkanValidationLayers.cpp
