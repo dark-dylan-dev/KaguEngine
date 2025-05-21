@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Adding an executable
-add_executable(KaguEngine src/main.cpp)
+add_executable(KaguEngine src/main.cpp
+        src/EngineInit/VulkanMSAAInit.cpp)
 target_sources(KaguEngine
         PRIVATE
         src/KaguEngine.hpp
@@ -26,7 +27,7 @@ target_sources(KaguEngine
 # Adding GLFW
 add_subdirectory(extern/glfw)
 target_include_directories(KaguEngine PRIVATE extern/glfw/include)
-target_link_libraries(KaguEngine PRIVATE glfw)
+target_link_libraries(KaguEngine PRIVATE glfw -static)
 
 # Adding GLM
 target_include_directories(KaguEngine PRIVATE extern/glm)
@@ -44,4 +45,4 @@ if(NOT Vulkan_FOUND)
 endif()
 
 target_include_directories(KaguEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan)
+target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan -static)
