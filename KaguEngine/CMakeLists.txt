@@ -46,4 +46,4 @@ if(NOT Vulkan_FOUND)
 endif()
 
 target_include_directories(KaguEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan -static)
+target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan)
