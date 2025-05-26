@@ -365,3 +365,7 @@ FodyWeavers.xsd
 # Jetbrains' .idea folder
 /.idea/
 /CMakeFiles/
+
+# Shaders / Code formatting
+*.spv
+.clang-format

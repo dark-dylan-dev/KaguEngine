@@ -1,0 +1,59 @@
+#pragma once
+
+#include "Device.hpp"
+#include "SwapChain.hpp"
+#include "Window.hpp"
+
+// std
+#include <cassert>
+#include <memory>
+#include <vector>
+
+namespace KaguEngine {
+
+class Renderer {
+public:
+    Renderer(Window &window, Device &device);
+    ~Renderer();
+
+    Renderer(const Renderer &) = delete;
+    Renderer &operator=(const Renderer &) = delete;
+
+    VkRenderPass getSwapChainRenderPass() const { return m_SwapChain->getRenderPass(); }
+    float getAspectRatio() const { return m_SwapChain->extentAspectRatio(); }
+    bool isFrameInProgress() const { return m_isFrameStarted; }
+
+    VkCommandBuffer getCurrentCommandBuffer() const {
+        assert(m_isFrameStarted && "Cannot get command buffer when frame not in progress");
+        return m_commandBuffers[m_currentFrameIndex];
+    }
+
+    int getFrameIndex() const {
+        assert(m_isFrameStarted && "Cannot get frame index when frame not in progress");
+        return m_currentFrameIndex;
+    }
+
+    VkCommandBuffer beginFrame();
+    void endFrame();
+    void beginSwapChainRenderPass(VkCommandBuffer commandBuffer) const;
+
+    void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+
+    std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
+
+private:
+    void createCommandBuffers();
+    void freeCommandBuffers();
+    void recreateSwapChain();
+
+    Window &windowRef;
+    Device &deviceRef;
+    std::unique_ptr<SwapChain> m_SwapChain;
+    std::vector<VkCommandBuffer> m_commandBuffers;
+
+    uint32_t m_currentImageIndex;
+    int m_currentFrameIndex{0};
+    bool m_isFrameStarted{false};
+};
+
+} // Namespace KaguEngine

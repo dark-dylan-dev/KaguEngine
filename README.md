@@ -18,7 +18,7 @@ Then, clone the repository :
 git clone --recursive https://github.com/dark-dylan-93220/KaguEngine
 cd KaguEngine
 ```
-Don't forget the `--recursive` flag as it adds the stb submodule from [nothings/stb](https://github.com/nothings/stb), used to treat textures inside KaguEngine.
+Don't forget the `--recursive` flag as it adds the submodules used inside KaguEngine.
 
 To update the repository to the latest commit :
  - First make sure that you are in the `KaguEngine/` directory.

@@ -4,26 +4,10 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Adding an executable
-add_executable(KaguEngine
-        src/main.cpp)
-target_sources(KaguEngine
-        PRIVATE
-        src/KaguEngine.hpp
-        src/KaguEngine.cpp
-        src/EngineInit/VulkanInit.cpp
-        src/EngineInit/VulkanDebugger.cpp
-        src/EngineInit/VulkanDeviceChoice.cpp
-        src/EngineInit/VulkanMSAAInit.cpp
-        src/EngineInit/VulkanQueues.cpp
-        src/EngineInit/VulkanSwapChain.cpp
-        src/EngineInit/VulkanValidationLayers.cpp
-        src/EngineInit/VulkanVertexBuffer.cpp
-        src/EngineShaders/VulkanShaders.cpp
-        src/EngineTextures/VulkanTextureGestion.cpp
-        src/EngineLoop/VulkanFrameRendering.cpp
-        src/EngineCleanup/VulkanCleanup.cpp
-)
+file(GLOB_RECURSE SOURCES src/*.cpp)
+
+# Adding the executable
+add_executable(KaguEngine ${SOURCES})
 
 # Adding GLFW
 add_subdirectory(extern/glfw)
