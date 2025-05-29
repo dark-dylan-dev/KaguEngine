@@ -37,7 +37,7 @@ private:
     std::unique_ptr<DescriptorSetLayout> m_GlobalSetLayout{};
     std::unique_ptr<DescriptorSetLayout> m_MaterialSetLayout{};
     std::unique_ptr<DescriptorPool> m_DescriptorPool{};
-    Entity::Map sceneEntities;
+    Entity::Map m_SceneEntities;
 };
 
 } // Namespace KaguEngine

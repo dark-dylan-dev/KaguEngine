@@ -2,10 +2,11 @@
 
 // std
 #include <stdexcept>
+#include <utility>
 
 namespace KaguEngine {
 
-Window::Window(const int w, const int h, const std::string &name) : width{w}, height{h}, windowName{name} {
+Window::Window(const int w, const int h, std::string name) : m_Width{w}, m_Height{h}, m_WindowName{std::move(name)} {
     initWindow();
 }
 
@@ -19,7 +20,7 @@ void Window::initWindow() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    m_Window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+    m_Window = glfwCreateWindow(m_Width, m_Height, m_WindowName.c_str(), nullptr, nullptr);
     glfwSetWindowUserPointer(m_Window, this);
     glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
 }
@@ -32,9 +33,9 @@ void Window::createWindowSurface(const VkInstance instance, VkSurfaceKHR* surfac
 
 void Window::framebufferResizeCallback(GLFWwindow* window, const int width, const int height) {
     const auto resizedWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
-    resizedWindow->framebufferResized = true;
-    resizedWindow->width = width;
-    resizedWindow->height = height;
+    resizedWindow->m_FramebufferResized = true;
+    resizedWindow->m_Width = width;
+    resizedWindow->m_Height = height;
 }
 
 } // Namespace KaguEngine

@@ -4,10 +4,8 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 
 // std
-#include <array>
 #include <cassert>
 #include <ranges>
 #include <stdexcept>
@@ -30,7 +28,9 @@ SimpleRenderSystem::SimpleRenderSystem(
     createPipeline(renderPass);
 }
 
-SimpleRenderSystem::~SimpleRenderSystem() { vkDestroyPipelineLayout(m_Device.device(), m_pipelineLayout, nullptr); }
+SimpleRenderSystem::~SimpleRenderSystem() {
+    vkDestroyPipelineLayout(m_Device.device(), m_pipelineLayout, nullptr);
+}
 
 void SimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout,
                                               VkDescriptorSetLayout materialSetLayout) {
@@ -80,15 +80,14 @@ void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
 
     for (auto &val: frameInfo.sceneEntitiesRef | std::views::values) {
         auto &obj = val;
-        if (obj.model == nullptr) continue;
+        if (!obj.model) continue;
 
-        // Only bind material set if it exists (non-null)
+        // Only binds material set if it exists
         if (obj.material.descriptorSet != VK_NULL_HANDLE) {
             vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     m_pipelineLayout, 1, 1, &obj.material.descriptorSet, 0, nullptr);
         } else {
-            // Optionally: bind a default/empty descriptor set for set 1 if you have one
-            // Or just skip binding set 1 for this draw (but the shader must not access set 1)
+            // Handles no material component
         }
 
         SimplePushConstantData push{};

@@ -19,16 +19,16 @@ public:
     Renderer(const Renderer &) = delete;
     Renderer &operator=(const Renderer &) = delete;
 
-    VkRenderPass getSwapChainRenderPass() const { return m_SwapChain->getRenderPass(); }
-    float getAspectRatio() const { return m_SwapChain->extentAspectRatio(); }
-    bool isFrameInProgress() const { return m_isFrameStarted; }
+    [[nodiscard]] VkRenderPass getSwapChainRenderPass() const { return m_SwapChain->getRenderPass(); }
+    [[nodiscard]] float getAspectRatio() const { return m_SwapChain->extentAspectRatio(); }
+    [[nodiscard]] bool isFrameInProgress() const { return m_isFrameStarted; }
 
-    VkCommandBuffer getCurrentCommandBuffer() const {
-        assert(m_isFrameStarted && "Cannot get command buffer when frame not in progress");
+    [[nodiscard]] VkCommandBuffer getCurrentCommandBuffer() const {
+        assert(m_isFrameStarted &&"Cannot get command buffer when frame not in progress");
         return m_commandBuffers[m_currentFrameIndex];
     }
 
-    int getFrameIndex() const {
+    [[nodiscard]] int getFrameIndex() const {
         assert(m_isFrameStarted && "Cannot get frame index when frame not in progress");
         return m_currentFrameIndex;
     }
@@ -36,7 +36,6 @@ public:
     VkCommandBuffer beginFrame();
     void endFrame();
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer) const;
-
     void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }

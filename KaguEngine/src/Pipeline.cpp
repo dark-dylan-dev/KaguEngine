@@ -3,7 +3,6 @@
 #include "Model.hpp"
 
 // std
-#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -46,7 +45,7 @@ std::vector<char> Pipeline::readFile(const std::string &filepath) {
 void Pipeline::createGraphicsPipeline(const std::string &vertFilepath, const std::string &fragFilepath,
                                       const PipelineConfigInfo &configInfo) {
     assert(configInfo.pipelineLayout != VK_NULL_HANDLE &&
-           "Cannot create graphics pipeline: no pipelineLayout provided in configInfo");
+    "Cannot create graphics pipeline: no pipelineLayout provided in configInfo");
     assert(configInfo.renderPass != VK_NULL_HANDLE &&
            "Cannot create graphics pipeline: no renderPass provided in configInfo");
 
@@ -138,8 +137,8 @@ void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
     configInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
     configInfo.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
     configInfo.rasterizationInfo.lineWidth = 1.0f;
-    configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
-    configInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    configInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     configInfo.rasterizationInfo.depthBiasEnable = VK_FALSE;
     configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f; // Optional
     configInfo.rasterizationInfo.depthBiasClamp = 0.0f; // Optional

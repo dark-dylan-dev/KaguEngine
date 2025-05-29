@@ -1,6 +1,7 @@
 #include "MovementController.hpp"
 
 // std
+#include <cmath>
 #include <limits>
 
 namespace KaguEngine {
@@ -25,7 +26,7 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, const float d
     entity.transform.rotation.y = glm::mod(entity.transform.rotation.y, glm::two_pi<float>());
 
     float yaw = entity.transform.rotation.y;
-    const glm::vec3 forwardDir{sin(yaw), 0.f, cos(yaw)};
+    const glm::vec3 forwardDir{std::sin(yaw), 0.f, std::cos(yaw)};
     const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
     constexpr glm::vec3 upDir{0.f, -1.f, 0.f};
 

@@ -20,8 +20,7 @@ struct TransformComponent {
     // Matrix corresponds to Translate * Ry * Rx * Rz * Scale
     // Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
     // https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-    glm::mat4 mat4();
-
+    [[nodiscard]] glm::mat4 mat4() const;
     [[nodiscard]] glm::mat3 normalMatrix() const;
 };
 
@@ -47,7 +46,7 @@ public:
     Entity(Entity &&) = default;
     Entity &operator=(Entity &&) = default;
 
-    id_t getId() const { return id; }
+    [[nodiscard]] id_t getId() const { return m_Id; }
 
     glm::vec3 color{};
     TransformComponent transform{};
@@ -59,9 +58,9 @@ public:
     std::unique_ptr<PointLightComponent> pointLight = nullptr;
 
 private:
-    explicit Entity(const id_t objId) : id{objId} {}
+    explicit Entity(const id_t objId) : m_Id{objId} {}
 
-    id_t id;
+    id_t m_Id;
 };
 
 } // Namespace KaguEngine
