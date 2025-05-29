@@ -58,12 +58,12 @@ private:
 
     Device& deviceRef;
 
-    std::unique_ptr<Buffer> vertexBuffer;
-    uint32_t vertexCount;
+    std::unique_ptr<Buffer> m_VertexBuffer;
+    uint32_t m_VertexCount;
 
-    bool hasIndexBuffer = false;
-    std::unique_ptr<Buffer> indexBuffer;
-    uint32_t indexCount;
+    bool m_HasIndexBuffer = false;
+    std::unique_ptr<Buffer> m_IndexBuffer;
+    uint32_t m_IndexCount;
 };
 
 } // Namespace KaguEngine

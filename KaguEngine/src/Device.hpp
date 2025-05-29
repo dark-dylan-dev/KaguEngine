@@ -2,7 +2,7 @@
 
 #include "Window.hpp"
 
-// std lib headers
+// std
 #include <string>
 #include <vector>
 
@@ -39,19 +39,19 @@ public:
     Device(Device &&) = delete;
     Device &operator=(Device &&) = delete;
 
-    [[nodiscard]] VkCommandPool getCommandPool() const { return commandPool; }
+    [[nodiscard]] VkCommandPool getCommandPool() const { return m_CommandPool; }
     [[nodiscard]] VkDevice device() const { return m_Device; }
-    [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
+    [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const { return m_PhysicalDevice; }
     [[nodiscard]] VkSurfaceKHR surface() const { return m_Surface; }
     [[nodiscard]] VkQueue graphicsQueue() const { return m_GraphicsQueue; }
     [[nodiscard]] VkQueue presentQueue() const { return m_PresentQueue; }
 
-    [[nodiscard]] SwapChainSupportDetails getSwapChainSupport() const { return querySwapChainSupport(physicalDevice); }
+    [[nodiscard]] SwapChainSupportDetails getSwapChainSupport() const { return querySwapChainSupport(m_PhysicalDevice); }
     [[nodiscard]] uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
-    [[nodiscard]] QueueFamilyIndices findPhysicalQueueFamilies() const { return findQueueFamilies(physicalDevice); }
+    [[nodiscard]] QueueFamilyIndices findPhysicalQueueFamilies() const { return findQueueFamilies(m_PhysicalDevice); }
     [[nodiscard]] VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                                  VkFormatFeatureFlags features) const;
-    [[nodiscard]] const VkSampleCountFlagBits& getSampleCount() const { return msaaSamples; }
+    [[nodiscard]] const VkSampleCountFlagBits& getSampleCount() const { return m_MSAASamples; }
 
     // Buffer Helper Functions
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
@@ -80,27 +80,27 @@ private:
     [[nodiscard]] std::vector<const char *> getRequiredExtensions() const;
     [[nodiscard]] bool checkValidationLayerSupport() const;
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
-    VkSampleCountFlagBits getMaxUsableSampleCount() const;
+    [[nodiscard]] VkSampleCountFlagBits getMaxUsableSampleCount() const;
 
     static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
-    void hasGflwRequiredInstanceExtensions() const;
+    void hasGLFWRequiredInstanceExtensions() const;
     bool checkDeviceExtensionSupport(VkPhysicalDevice device) const;
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) const;
 
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkInstance m_Instance;
+    VkDebugUtilsMessengerEXT m_DebugMessenger;
+    VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
     Window &windowRef;
-    VkCommandPool commandPool;
+    VkCommandPool m_CommandPool;
 
     VkDevice m_Device;
     VkSurfaceKHR m_Surface;
     VkQueue m_GraphicsQueue;
     VkQueue m_PresentQueue;
-    VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+    VkSampleCountFlagBits m_MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
-    const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    const std::vector<const char *> m_ValidationLayers = {"VK_LAYER_KHRONOS_validation"};
+    const std::vector<const char *> m_DeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 
 } // Namespace KaguEngine

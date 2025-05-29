@@ -14,8 +14,6 @@
 #include <glm/gtc/constants.hpp>
 
 // std
-#include <array>
-#include <cassert>
 #include <chrono>
 #include <numeric>
 #include <stdexcept>
@@ -30,20 +28,20 @@ Core::Core() {
         .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .build();
     m_DescriptorPool = DescriptorPool::Builder(m_Device)
-        .setMaxSets(1000)
+        .setMaxSets(1000) // Arbitrary value
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
         .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
         .build();
     loadGameObjects();
 }
 
-Core::~Core() {}
+Core::~Core() = default;
 
 void Core::run() {
     std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
     for (auto& uboBuffer : uboBuffers) {
         uboBuffer = std::make_unique<Buffer>(m_Device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         uboBuffer->map();
     }
 
@@ -88,15 +86,16 @@ void Core::run() {
 
         if (auto commandBuffer = m_Renderer.beginFrame()) {
             int frameIndex = m_Renderer.getFrameIndex();
-            FrameInfo frameInfo{frameIndex,   frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex],
-                                sceneEntities};
+            FrameInfo frameInfo{
+                frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex], m_SceneEntities
+            };
 
             // update
             GlobalUbo ubo{};
             ubo.projection = camera.getProjection();
             ubo.view = camera.getView();
             ubo.inverseView = camera.getInverseView();
-            pointLightSystem.update(frameInfo, ubo);
+            PointLightSystem::update(frameInfo, ubo);
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             if(uboBuffers[frameIndex]->flush() != VK_SUCCESS)
                 throw std::runtime_error("Couldn't flush the ubo for one frame!");
@@ -120,7 +119,7 @@ void Core::loadGameObjects() {
     std::shared_ptr<Model> loadedModel;
     std::unique_ptr<Texture> loadedTexture;
 
-    // OBAMIUM
+    // Obamium
     loadedTexture = Texture::createTextureFromFile(
         m_Device,
         *m_Renderer.getSwapChain(),
@@ -137,9 +136,9 @@ void Core::loadGameObjects() {
     centralObamium.transform.translation = {0.0f, 0.0f, 0.0f};
     centralObamium.transform.scale = {1.f, 1.f, 1.f};
     centralObamium.transform.rotation = {0.f, 0.f, 3.14159265f};
-    sceneEntities.emplace(centralObamium.getId(), std::move(centralObamium));
+    m_SceneEntities.emplace(centralObamium.getId(), std::move(centralObamium));
 
-    // VIKING ROOM
+    // Viking room
     loadedTexture = Texture::createTextureFromFile(
         m_Device,
         *m_Renderer.getSwapChain(),
@@ -156,9 +155,8 @@ void Core::loadGameObjects() {
     vikingRoom.transform.translation = {2.f, .0f, 2.f};
     vikingRoom.transform.scale = {1.f, 1.f, 1.f};
     vikingRoom.transform.rotation = {3.14159265f / 2.f, 0.f, 3.14159265f};
-    sceneEntities.emplace(vikingRoom.getId(), std::move(vikingRoom));
+    m_SceneEntities.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
-    // SOL
     loadedTexture = Texture::createTextureFromFile(
         m_Device,
         *m_Renderer.getSwapChain(),
@@ -173,9 +171,8 @@ void Core::loadGameObjects() {
     floor.material = floor.texture->getMaterial();
     floor.transform.translation = {0.f, 0.5f, 0.f};
     floor.transform.scale = {1.f, 1.f, 1.f};
-    sceneEntities.emplace(floor.getId(), std::move(floor));
+    m_SceneEntities.emplace(floor.getId(), std::move(floor));
 
-    // LUMIÈRES
     std::vector<glm::vec3> lightColors{
         {1.f, .1f, .1f},
         {.1f, .1f, 1.f},
@@ -188,9 +185,12 @@ void Core::loadGameObjects() {
     for (int i = 0; i < lightColors.size(); i++) {
         auto pointLight = Entity::makePointLight(0.2f);
         pointLight.color = lightColors[i];
-        auto rotateLight = glm::rotate(glm::mat4(1.f), i * glm::two_pi<float>() / lightColors.size(), {0.f, -1.f, 0.f});
+        auto rotateLight = glm::rotate(
+            glm::mat4(1.f),
+            static_cast<float>(i) * glm::two_pi<float>() / static_cast<float>(lightColors.size()),
+            {0.f, -1.f, 0.f});
         pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
-        sceneEntities.emplace(pointLight.getId(), std::move(pointLight));
+        m_SceneEntities.emplace(pointLight.getId(), std::move(pointLight));
     }
 }
 

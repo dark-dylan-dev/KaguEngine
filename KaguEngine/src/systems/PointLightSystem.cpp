@@ -4,14 +4,12 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 
 // std
-#include <array>
-#include <cassert>
 #include <map>
 #include <ranges>
 #include <stdexcept>
+#include <vector>
 
 namespace KaguEngine {
 
@@ -27,9 +25,11 @@ PointLightSystem::PointLightSystem(Device &device, const VkRenderPass renderPass
     createPipeline(renderPass);
 }
 
-PointLightSystem::~PointLightSystem() { vkDestroyPipelineLayout(m_Device.device(), m_pipelineLayout, nullptr); }
+PointLightSystem::~PointLightSystem() {
+    vkDestroyPipelineLayout(m_Device.device(), m_pipelineLayout, nullptr);
+}
 
-void PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
+void PointLightSystem::createPipelineLayout(const VkDescriptorSetLayout globalSetLayout) {
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
@@ -59,8 +59,9 @@ void PointLightSystem::createPipeline(const VkRenderPass renderPass) {
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     pipelineConfig.multisampleInfo.rasterizationSamples = m_Device.getSampleCount();
-    m_Pipeline = std::make_unique<Pipeline>(m_Device, "assets/shaders/point_light.vert.spv",
-                                            "assets/shaders/point_light.frag.spv", pipelineConfig);
+    m_Pipeline = std::make_unique<Pipeline>(m_Device,
+        "assets/shaders/point_light.vert.spv",
+        "assets/shaders/point_light.frag.spv", pipelineConfig);
 }
 
 void PointLightSystem::update(const FrameInfo &frameInfo, GlobalUbo &ubo) {
@@ -80,7 +81,7 @@ void PointLightSystem::update(const FrameInfo &frameInfo, GlobalUbo &ubo) {
         ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.f);
         ubo.pointLights[lightIndex].color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
 
-        lightIndex += 1;
+        lightIndex++;
     }
     ubo.numLights = lightIndex;
 }

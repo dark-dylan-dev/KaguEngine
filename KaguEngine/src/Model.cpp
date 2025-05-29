@@ -9,8 +9,6 @@
 #include <glm/gtx/hash.hpp>
 
 // std
-#include <cassert>
-#include <cstring>
 #include <unordered_map>
 
 #ifndef ENGINE_DIR
@@ -33,7 +31,7 @@ Model::Model(Device& device, const Builder& builder) : deviceRef{device} {
     createIndexBuffers(builder.indices);
 }
 
-Model::~Model() {}
+Model::~Model() = default;
 
 std::unique_ptr<Model> Model::createModelFromFile(Device& device, const std::string& filepath) {
     Builder builder{};
@@ -42,16 +40,16 @@ std::unique_ptr<Model> Model::createModelFromFile(Device& device, const std::str
 }
 
 void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
-    vertexCount = static_cast<uint32_t>(vertices.size());
-    assert(vertexCount >= 3 && "Vertex count must be at least 3");
+    m_VertexCount = static_cast<uint32_t>(vertices.size());
+    assert(m_VertexCount >= 3 && "Vertex count must be at least 3");
 
-    const VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
+    const VkDeviceSize bufferSize = sizeof(vertices[0]) * m_VertexCount;
     uint32_t vertexSize = sizeof(vertices[0]);
 
     Buffer stagingBuffer{
             deviceRef,
             vertexSize,
-            vertexCount,
+            m_VertexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
     };
@@ -59,28 +57,28 @@ void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
     stagingBuffer.map();
     stagingBuffer.writeToBuffer(vertices.data());
 
-    vertexBuffer = std::make_unique<Buffer>(deviceRef, vertexSize, vertexCount,
+    m_VertexBuffer = std::make_unique<Buffer>(deviceRef, vertexSize, m_VertexCount,
                                             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    deviceRef.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+    deviceRef.copyBuffer(stagingBuffer.getBuffer(), m_VertexBuffer->getBuffer(), bufferSize);
 }
 
 void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
-    indexCount = static_cast<uint32_t>(indices.size());
-    hasIndexBuffer = indexCount > 0;
+    m_IndexCount = static_cast<uint32_t>(indices.size());
+    m_HasIndexBuffer = m_IndexCount > 0;
 
-    if (!hasIndexBuffer) {
+    if (!m_HasIndexBuffer) {
         return;
     }
 
-    const VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
+    const VkDeviceSize bufferSize = sizeof(indices[0]) * m_IndexCount;
     uint32_t indexSize = sizeof(indices[0]);
 
     Buffer stagingBuffer{
             deviceRef,
             indexSize,
-            indexCount,
+            m_IndexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
     };
@@ -88,28 +86,28 @@ void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
     stagingBuffer.map();
     stagingBuffer.writeToBuffer(indices.data());
 
-    indexBuffer = std::make_unique<Buffer>(deviceRef, indexSize, indexCount,
+    m_IndexBuffer = std::make_unique<Buffer>(deviceRef, indexSize, m_IndexCount,
                                            VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    deviceRef.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
+    deviceRef.copyBuffer(stagingBuffer.getBuffer(), m_IndexBuffer->getBuffer(), bufferSize);
 }
 
 void Model::draw(const VkCommandBuffer commandBuffer) const {
-    if (hasIndexBuffer) {
-        vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
+    if (m_HasIndexBuffer) {
+        vkCmdDrawIndexed(commandBuffer, m_IndexCount, 1, 0, 0, 0);
     } else {
-        vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+        vkCmdDraw(commandBuffer, m_VertexCount, 1, 0, 0);
     }
 }
 
 void Model::bind(const VkCommandBuffer commandBuffer) const {
-    const VkBuffer buffers[] = {vertexBuffer->getBuffer()};
+    const VkBuffer buffers[] = {m_VertexBuffer->getBuffer()};
     constexpr VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
-    if (hasIndexBuffer) {
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    if (m_HasIndexBuffer) {
+        vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
     }
 }
 
@@ -172,6 +170,7 @@ void Model::Builder::loadModel(const std::string &filepath) {
                 };
             }
 
+            // Flips the texture's uv coordinates
             if (texcoord_index >= 0) {
                 vertex.texCoord = {
                     attrib.texcoords[2 * texcoord_index + 0],

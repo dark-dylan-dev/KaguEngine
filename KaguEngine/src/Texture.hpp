@@ -25,12 +25,11 @@ public:
                                                           VkDescriptorSetLayout descriptorSetLayout,
                                                           VkDescriptorPool descriptorPool);
 
-    const VkImage& getTextureImage() const { return textureImage; }
-    const VkDeviceMemory& getTextureMemory() const { return textureImageMemory; }
-    const VkImageView& getTextureImageView() const { return textureImageView; }
-    const VkSampler& getTextureSampler() const { return textureSampler; }
-
-    const Material& getMaterial() const { return material; }
+    [[nodiscard]] const VkImage& getTextureImage()         const { return m_TextureImage; }
+    [[nodiscard]] const VkDeviceMemory& getTextureMemory() const { return m_TextureImageMemory; }
+    [[nodiscard]] const VkImageView& getTextureImageView() const { return m_TextureImageView; }
+    [[nodiscard]] const VkSampler& getTextureSampler()     const { return m_TextureSampler; }
+    [[nodiscard]] const Material& getMaterial()            const { return m_Material; }
 
 private:
     void loadTexture(const std::string& filepath);
@@ -48,17 +47,17 @@ private:
     void createTextureSampler();
     void createMaterial(VkDescriptorSetLayout layout, VkDescriptorPool pool);
 
-    uint32_t mipLevels;
+    uint32_t m_MipLevels;
 
-    VkDeviceMemory textureImageMemory{};
-    VkImage textureImage{};
-    VkImageView textureImageView{};
-    VkSampler textureSampler{};
+    VkDeviceMemory m_TextureImageMemory{};
+    VkImage m_TextureImage{};
+    VkImageView m_TextureImageView{};
+    VkSampler m_TextureSampler{};
 
     Device& deviceRef;
     SwapChain& swapChainRef;
 
-    Material material;
+    Material m_Material;
 };
 
 } // namespace KaguEngine

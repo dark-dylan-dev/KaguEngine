@@ -21,7 +21,7 @@ public:
 
     private:
         Device &deviceRef;
-        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings{};
+        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> m_BuilderBindings{};
     };
 
     DescriptorSetLayout(Device &m_Device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
@@ -29,12 +29,12 @@ public:
     DescriptorSetLayout(const DescriptorSetLayout &) = delete;
     DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
-    VkDescriptorSetLayout getDescriptorSetLayout() const { return descriptorSetLayout; }
+    VkDescriptorSetLayout getDescriptorSetLayout() const { return m_DescriptorSetLayout; }
 
 private:
     Device &deviceRef;
-    VkDescriptorSetLayout descriptorSetLayout;
-    std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings;
+    VkDescriptorSetLayout m_DescriptorSetLayout;
+    std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> m_Bindings;
 
     friend class DescriptorWriter;
 };
@@ -66,13 +66,13 @@ public:
     bool allocateDescriptor(VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const;
 
     void freeDescriptors(const std::vector<VkDescriptorSet> &descriptors) const;
-    VkDescriptorPool& getDescriptorPool() { return descriptorPool; }
+    VkDescriptorPool& getDescriptorPool() { return m_DescriptorPool; }
 
     void resetPool() const;
 
 private:
     Device &deviceRef;
-    VkDescriptorPool descriptorPool;
+    VkDescriptorPool m_DescriptorPool;
 
     friend class DescriptorWriter;
 };
@@ -90,7 +90,7 @@ public:
 private:
     DescriptorSetLayout &setLayoutRef;
     DescriptorPool &poolRef;
-    std::vector<VkWriteDescriptorSet> writes;
+    std::vector<VkWriteDescriptorSet> m_Writes;
 };
 
 } // Namespace KaguEngine

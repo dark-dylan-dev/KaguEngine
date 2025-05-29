@@ -1,15 +1,11 @@
 #pragma once
 
-#include "../Camera.hpp"
 #include "../Device.hpp"
 #include "../FrameInfo.hpp"
-#include "../Entity.hpp"
 #include "../Pipeline.hpp"
 
 // std
 #include <memory>
-#include <vector>
-#include <iostream>
 
 namespace KaguEngine {
 

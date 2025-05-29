@@ -2,7 +2,6 @@
 
 // std
 #include <array>
-#include <cassert>
 #include <stdexcept>
 
 namespace KaguEngine {
@@ -86,7 +85,7 @@ void Renderer::endFrame() {
     }
 
     if (const auto result = m_SwapChain->submitCommandBuffers(&commandBuffer, &m_currentImageIndex);
-        result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || windowRef.wasWindowResized()) {
+        result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || windowRef.windowResized()) {
         windowRef.resetWindowResizedFlag();
         recreateSwapChain();
     } else if (result != VK_SUCCESS) {

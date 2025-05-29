@@ -2,7 +2,7 @@
 
 // std
 #include <cassert>
-#include <limits>
+#include <cmath>
 
 namespace KaguEngine {
 
@@ -19,7 +19,7 @@ void Camera::setOrthographicProjection(const float left, const float right, cons
 
 void Camera::setPerspectiveProjection(float fovy, float aspect, float near, float far) {
     assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
-    const float tanHalfFovy = tan(fovy / 2.f);
+    const float tanHalfFovy = std::tan(fovy / 2.f);
     projectionMatrix = glm::mat4{0.0f};
     projectionMatrix[0][0] = 1.f / (aspect * tanHalfFovy);
     projectionMatrix[1][1] = 1.f / (tanHalfFovy);
@@ -62,7 +62,7 @@ void Camera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3
     inverseViewMatrix[3][2] = position.z;
 }
 
-void Camera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
+void Camera::setViewTarget(const glm::vec3 position, const glm::vec3 target, const glm::vec3 up) {
     setViewDirection(position, target - position, up);
 }
 

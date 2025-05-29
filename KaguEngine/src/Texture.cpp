@@ -4,6 +4,7 @@
 #include <stb_image.h>
 
 // std
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
 
@@ -19,17 +20,17 @@ Texture::Texture(Device& device, SwapChain& swapChain, const std::string& filepa
 }
 
 Texture::~Texture() {
-    if (textureSampler != VK_NULL_HANDLE) {
-        vkDestroySampler(deviceRef.device(), textureSampler, nullptr);
+    if (m_TextureSampler != VK_NULL_HANDLE) {
+        vkDestroySampler(deviceRef.device(), m_TextureSampler, nullptr);
     }
-    if (textureImageView != VK_NULL_HANDLE) {
-        vkDestroyImageView(deviceRef.device(), textureImageView, nullptr);
+    if (m_TextureImageView != VK_NULL_HANDLE) {
+        vkDestroyImageView(deviceRef.device(), m_TextureImageView, nullptr);
     }
-    if (textureImage != VK_NULL_HANDLE) {
-        vkDestroyImage(deviceRef.device(), textureImage, nullptr);
+    if (m_TextureImage != VK_NULL_HANDLE) {
+        vkDestroyImage(deviceRef.device(), m_TextureImage, nullptr);
     }
-    if (textureImageMemory != VK_NULL_HANDLE) {
-        vkFreeMemory(deviceRef.device(), textureImageMemory, nullptr);
+    if (m_TextureImageMemory != VK_NULL_HANDLE) {
+        vkFreeMemory(deviceRef.device(), m_TextureImageMemory, nullptr);
     }
 }
 
@@ -41,8 +42,8 @@ std::unique_ptr<Texture> Texture::createTextureFromFile(Device& device, SwapChai
 }
 
 void Texture::createMaterial(VkDescriptorSetLayout layout, VkDescriptorPool pool) {
-    material.textureView = textureImageView;
-    material.textureSampler = textureSampler;
+    m_Material.textureView = m_TextureImageView;
+    m_Material.textureSampler = m_TextureSampler;
 
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -50,18 +51,18 @@ void Texture::createMaterial(VkDescriptorSetLayout layout, VkDescriptorPool pool
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;
 
-    if (vkAllocateDescriptorSets(deviceRef.device(), &allocInfo, &material.descriptorSet) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(deviceRef.device(), &allocInfo, &m_Material.descriptorSet) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate descriptor set for material!");
     }
 
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = textureImageView;
-    imageInfo.sampler = textureSampler;
+    imageInfo.imageView = m_TextureImageView;
+    imageInfo.sampler = m_TextureSampler;
 
     VkWriteDescriptorSet descriptorWrite{};
     descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstSet = material.descriptorSet;
+    descriptorWrite.dstSet = m_Material.descriptorSet;
     descriptorWrite.dstBinding = 0;
     descriptorWrite.dstArrayElement = 0;
     descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -79,7 +80,7 @@ void Texture::loadTexture(const std::string &filepath) {
         throw std::runtime_error("Failed to load texture image!");
     }
 
-    mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+    m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
     const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     VkBuffer stagingBuffer;
@@ -99,17 +100,17 @@ void Texture::loadTexture(const std::string &filepath) {
     stbi_image_free(pixels);
 
     createImage(
-        texWidth, texHeight, mipLevels,
+        texWidth, texHeight, m_MipLevels,
         VK_SAMPLE_COUNT_1_BIT,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        textureImage, textureImageMemory);
+        m_TextureImage, m_TextureImageMemory);
 
-    transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-    deviceRef.copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
-    generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
+    transitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_MipLevels);
+    deviceRef.copyBufferToImage(stagingBuffer, m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
+    generateMipmaps(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, m_MipLevels);
 
     vkDestroyBuffer(deviceRef.device(), stagingBuffer, nullptr);
     vkFreeMemory(deviceRef.device(), stagingBufferMemory, nullptr);
@@ -166,7 +167,7 @@ void Texture::transitionImageLayout(VkImage image, VkFormat format, const VkImag
 }
 
 void Texture::createTextureImageView() {
-    textureImageView = swapChainRef.createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
+    m_TextureImageView = swapChainRef.createImageView(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, m_MipLevels);
 }
 
 void Texture::createTextureSampler() {
@@ -185,10 +186,10 @@ void Texture::createTextureSampler() {
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.minLod = 0.0f; // Optional
-    samplerInfo.maxLod = static_cast<float>(mipLevels);
+    samplerInfo.maxLod = static_cast<float>(m_MipLevels);
     samplerInfo.mipLodBias = 0.0f; // Optional
 
-    if (vkCreateSampler(deviceRef.device(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+    if (vkCreateSampler(deviceRef.device(), &samplerInfo, nullptr, &m_TextureSampler) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create texture sampler!");
     }
 }

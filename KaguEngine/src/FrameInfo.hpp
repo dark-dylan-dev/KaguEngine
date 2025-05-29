@@ -8,7 +8,7 @@
 
 namespace KaguEngine {
 
-#define MAX_LIGHTS 10
+constexpr int MAX_LIGHTS = 10;
 
 struct PointLight {
     glm::vec4 position{}; // ignore w
