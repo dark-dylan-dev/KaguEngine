@@ -368,4 +368,8 @@ FodyWeavers.xsd
 
 # Shaders / Code formatting
 *.spv
-.clang-format
+/.clang-format
+
+# Build directory unignore (.spv and .obj files)
+!/build/assets/shaders/*
+!/build/assets/models/*

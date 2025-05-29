@@ -422,35 +422,37 @@ VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfac
 
 VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
     for (const auto &availablePresentMode: availablePresentModes) {
+        // Lower latency, but frames might be dropped
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             std::cout << "Present mode : Mailbox" << std::endl;
             return availablePresentMode;
         }
     }
 
-    // for (const auto &availablePresentMode : availablePresentModes) {
-    //   if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-    //     std::cout << "Present mode: Immediate" << std::endl;
-    //     return availablePresentMode;
-    //   }
-    // }
+    for (const auto &availablePresentMode : availablePresentModes) {
+        // V-Sync off
+        if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+          std::cout << "Present mode: Immediate" << std::endl;
+          return availablePresentMode;
+        }
+    }
 
-    // std::cout << "Present mode: V-Sync" << std::endl;
+    // No frames dropped, higher latency
+    std::cout << "Present mode: V-Sync" << std::endl;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) const {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
-    } else {
-        VkExtent2D actualExtent = m_WindowExtent;
-        actualExtent.width = std::max(capabilities.minImageExtent.width,
-                                      std::min(capabilities.maxImageExtent.width, actualExtent.width));
-        actualExtent.height = std::max(capabilities.minImageExtent.height,
-                                       std::min(capabilities.maxImageExtent.height, actualExtent.height));
-
-        return actualExtent;
     }
+    VkExtent2D actualExtent = m_WindowExtent;
+    actualExtent.width =
+        std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+    actualExtent.height =
+        std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+
+    return actualExtent;
 }
 
 VkFormat SwapChain::findDepthFormat() const {
