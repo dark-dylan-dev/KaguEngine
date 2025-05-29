@@ -4,6 +4,7 @@
 #include <stb_image.h>
 
 // std
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
 
