@@ -1,4 +1,4 @@
-#include "Core.hpp"
+#include "App.hpp"
 
 #include "Buffer.hpp"
 #include "Camera.hpp"
@@ -20,7 +20,7 @@
 
 namespace KaguEngine {
 
-Core::Core() {
+App::App() {
     m_GlobalSetLayout = DescriptorSetLayout::Builder(m_Device)
         .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
         .build();
@@ -35,9 +35,9 @@ Core::Core() {
     loadGameObjects();
 }
 
-Core::~Core() = default;
+App::~App() = default;
 
-void Core::run() {
+void App::run() {
     std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
     for (auto& uboBuffer : uboBuffers) {
         uboBuffer = std::make_unique<Buffer>(m_Device, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -115,7 +115,7 @@ void Core::run() {
     vkDeviceWaitIdle(m_Device.device());
 }
 
-void Core::loadGameObjects() {
+void App::loadGameObjects() {
     std::shared_ptr<Model> loadedModel;
     std::unique_ptr<Texture> loadedTexture;
 
