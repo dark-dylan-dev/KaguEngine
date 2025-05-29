@@ -1,8 +1,8 @@
-#include "Core.hpp"
+#include "App.hpp"
 
 int main() {
     try {
-        KaguEngine::Core Engine{};
+        KaguEngine::App Engine{};
         Engine.run();
     }
     catch (std::exception& error) {

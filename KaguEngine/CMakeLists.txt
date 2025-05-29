@@ -9,19 +9,14 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 # Adding the executable
 add_executable(KaguEngine ${SOURCES})
 
-# Adding GLFW
+# Adding external libraries
 add_subdirectory(extern/glfw)
 target_include_directories(KaguEngine PRIVATE extern/glfw/include)
 target_link_libraries(KaguEngine PRIVATE glfw)
-
-# Adding GLM
 target_include_directories(KaguEngine PRIVATE extern/glm)
-
-# Adding stb
 target_include_directories(KaguEngine PRIVATE extern/stb)
-
-# Adding tinyobjloader
 target_include_directories(KaguEngine PRIVATE extern/tinyobjloader)
+target_include_directories(KaguEngine PRIVATE extern/imgui)
 
 # Adding Vulkan
 find_package(Vulkan REQUIRED)

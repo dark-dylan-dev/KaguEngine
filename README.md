@@ -1,72 +1,92 @@
-<h1 align="center">Kagu Engine</h1>
+<div align="center">
 
-<p align="center"><i>3D Game Engine made with Vulkan</i></p>
+# Kagu Engine
 
-<p align="center">
-  <img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo" width=400 height=400/>
-</p>
+*3D Game Engine made with Vulkan*
 
-<h2 align="center">Clone the repository</h2>
+<img src="Images/KaguEngine_Logo.png" alt="Kagu Engine logo" width=400 height=400/>
 
-First of all, move to the directory you would like to clone the repository to :
+[![Build Status](https://img.shields.io/github/actions/workflow/status/dark-dylan-dev/KaguEngine/cmake-multi-platform.yml?branch=master)](https://github.com/dark-dylan-dev/KaguEngine/actions)
+[![License](https://img.shields.io/github/license/dark-dylan-dev/KaguEngine)](LICENSE.txt)
+
+## Table of Contents
+
+</div>
+
+ - [Clone the repository](#clone-the-repository)
+ - [Update the repository](#update-the-repository)
+ - [Project dependencies](#project-dependencies)
+ - [Building the engine](#building-the-engine)
+ - [License](#license)
+
+<div align="center">
+
+## Clone the repository
+
+</div>
+
+ - Clone the repository and all its submodules with :
 ```bash
-cd path/to/repo
-```
-
-Then, clone the repository :
-```bash
-git clone --recursive https://github.com/dark-dylan-93220/KaguEngine
+git clone --recursive https://github.com/dark-dylan-dev/KaguEngine
 cd KaguEngine
 ```
-Don't forget the `--recursive` flag as it adds the submodules used inside KaguEngine.
+> The `--recursive` flag ensures that the submodules are cloned.
 
-To update the repository to the latest commit :
- - First make sure that you are in the `KaguEngine/` directory.
- - Then, run :
+<div align="center">
+
+## Update the repository
+
+</div>
+
+ - Inside the `KaguEngine/` directory, run :
 ```bash
 git checkout master
 git pull
+git submodule update --init --recursive
 ```
+> The last command updates the submodules.
 
-<h2 align="center">Project dependencies</h2>
+<div align="center">
 
-In order for the engine to work properly, you must have a recent version of the Vulkan SDK installed on your system.
+## Project dependencies
 
-<i>See more at https://www.lunarg.com/vulkan-sdk/</i>
+</div>
 
-And you must also have CMake installed, with a minimum version being 3.12.
+ - [Vulkan SDK](https://vulkan.lunarg.com/)
+ - [CMake](https://cmake.org/download/)
 
-<i>See more at https://cmake.org/download/</i>
-
-<h2 align="center">Building the application</h2>
-
-First, move to the directory where the repository is located at :
+Linux dependencies
 ```bash
-cd path/to/repo
-```
-Then, make sure that, depending on your OS, you have all the dependencies installed :
- - Linux (using apt) :
-```bash
+# Debian, Ubuntu
 sudo apt-get update
 sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
-```
- - Linux (using pacman) :
-```bash
+
+# Arch Linux
 sudo pacman -Syu
 sudo pacman -S --noconfirm libxkbcommon xorg-xinerama xorg-xcursor libxi mesa
+
+# Fedora, RedHat
+sudo dnf makecache
+sudo dnf install -y libxkbcommon-devel libXinerama-devel libXcursor-devel libXi-devel mesa-libGL-devel
 ```
-Once this is all done, you can use CMake to build the project :
+
+<div align="center">
+
+## Building the engine
+
+</div>
+
+ - Inside the `KaguEngine/` directory, run :
 ```bash
-cmake -B path/to/build
-cmake --build path/to/build
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
 ```
+> Available build configurations : Debug, Release, RelWithDebInfo, MinSizeRel
 
-<h2 align="center">Contributing</h2>
+<div align="center">
 
-<p align="center"><i>To add later on...</i></p>
+## License
 
-<h2 align="center">License</h2>
+</div>
 
-KaguEngine uses the MIT license meaning that you can do whatever you want as long as you include the original copyright and license notice in any copy of the software / source.
-
-See [LICENSE.txt](LICENSE.txt) for more information.
+Kagu Engine is licensed under the [MIT License](LICENSE.txt).

@@ -13,16 +13,16 @@
 
 namespace KaguEngine {
 
-class Core {
+class App {
 public:
     static constexpr int WIDTH = 800;
     static constexpr int HEIGHT = 600;
 
-    Core();
-    ~Core();
+    App();
+    ~App();
 
-    Core(const Core &) = delete;
-    Core &operator=(const Core &) = delete;
+    App(const App &) = delete;
+    App &operator=(const App &) = delete;
 
     void run();
 
@@ -34,6 +34,8 @@ private:
     Renderer m_Renderer{m_Window, m_Device};
 
     // note: order of declarations matters
+    //  - class destroyed from bottom to top
+    //  - entities -> pool -> material set -> global set
     std::unique_ptr<DescriptorSetLayout> m_GlobalSetLayout{};
     std::unique_ptr<DescriptorSetLayout> m_MaterialSetLayout{};
     std::unique_ptr<DescriptorPool> m_DescriptorPool{};
