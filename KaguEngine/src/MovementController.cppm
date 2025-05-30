@@ -7,12 +7,11 @@ module;
 #include <glm/gtc/constants.hpp>
 
 // std
-#include <cmath>
-#include <limits>
-
-export module MovementController;
+import std;
 
 import Entity;
+
+export module MovementController;
 
 export namespace KaguEngine {
 

@@ -4,18 +4,12 @@ module;
 #include <vulkan/vulkan.h>
 
 // std
-#include <array>
-#include <cstring>
-#include <iostream>
-#include <memory>
-#include <limits>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-export module SwapChain;
+import std;
+import std.compat;
 
 import Device;
+
+export module SwapChain;
 
 export namespace KaguEngine {
 

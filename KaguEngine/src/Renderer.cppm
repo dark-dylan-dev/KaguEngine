@@ -5,18 +5,14 @@ module;
 #include <GLFW/glfw3.h>
 
 // std
-#include <array>
 #include <cassert>
-#include <cstring>
-#include <memory>
-#include <stdexcept>
-#include <vector>
-
-export module Renderer;
+import std.compat;
 
 import Device;
 import SwapChain;
 import Window;
+
+export module Renderer;
 
 export namespace KaguEngine {
 

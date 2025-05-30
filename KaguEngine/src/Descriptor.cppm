@@ -4,15 +4,11 @@ module;
 
 // std
 #include <cassert>
-#include <memory>
-#include <ranges>
-#include <unordered_map>
-#include <vector>
-#include <stdexcept>
-
-export module Descriptor;
+import std.compat;
 
 import Device;
+
+export module Descriptor;
 
 export namespace KaguEngine {
 

@@ -5,13 +5,12 @@ module;
 #include <glm/gtc/matrix_transform.hpp>
 
 // std
-#include <memory>
-#include <unordered_map>
-
-export module Entity;
+import std;
 
 import Model;
 import Texture;
+
+export module Entity;
 
 export namespace KaguEngine {
 
@@ -47,6 +46,7 @@ public:
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
     Entity(Entity &&) = default;
+    Entity &operator=(Entity &&) = default;
 
     [[nodiscard]] id_t getId() const { return m_Id; }
 
@@ -54,7 +54,7 @@ public:
     TransformComponent transform{};
 
     // Optional pointer components
-    std::shared_ptr<Texture> texture{};
+    std::unique_ptr<Texture> texture = nullptr;
     std::shared_ptr<Model> model{};
     Texture::Material material{};
     std::unique_ptr<PointLightComponent> pointLight = nullptr;
@@ -78,25 +78,27 @@ glm::mat4 TransformComponent::mat4() const {
     const float s2 = glm::sin(rotation.x);
     const float c1 = glm::cos(rotation.y);
     const float s1 = glm::sin(rotation.y);
-    return glm::mat4{{
-                             scale.x * (c1 * c3 + s1 * s2 * s3),
-                             scale.x * (c2 * s3),
-                             scale.x * (c1 * s2 * s3 - c3 * s1),
-                             0.0f,
-                     },
-                     {
-                             scale.y * (c3 * s1 * s2 - c1 * s3),
-                             scale.y * (c2 * c3),
-                             scale.y * (c1 * c3 * s2 + s1 * s3),
-                             0.0f,
-                     },
-                     {
-                             scale.z * (c2 * s1),
-                             scale.z * (-s2),
-                             scale.z * (c1 * c2),
-                             0.0f,
-                     },
-                     {translation.x, translation.y, translation.z, 1.0f}};
+    return glm::mat4{
+        {
+             scale.x * (c1 * c3 + s1 * s2 * s3),
+             scale.x * (c2 * s3),
+             scale.x * (c1 * s2 * s3 - c3 * s1),
+             0.0f,
+        },
+        {
+             scale.y * (c3 * s1 * s2 - c1 * s3),
+             scale.y * (c2 * c3),
+             scale.y * (c1 * c3 * s2 + s1 * s3),
+             0.0f,
+        },
+        {
+             scale.z * (c2 * s1),
+             scale.z * (-s2),
+             scale.z * (c1 * c2),
+             0.0f,
+        },
+        {translation.x, translation.y, translation.z, 1.0f}
+    };
 }
 
 glm::mat3 TransformComponent::normalMatrix() const {
@@ -109,21 +111,21 @@ glm::mat3 TransformComponent::normalMatrix() const {
     const glm::vec3 invScale = 1.0f / scale;
 
     return glm::mat3{
-            {
-                    invScale.x * (c1 * c3 + s1 * s2 * s3),
-                    invScale.x * (c2 * s3),
-                    invScale.x * (c1 * s2 * s3 - c3 * s1),
-            },
-            {
-                    invScale.y * (c3 * s1 * s2 - c1 * s3),
-                    invScale.y * (c2 * c3),
-                    invScale.y * (c1 * c3 * s2 + s1 * s3),
-            },
-            {
-                    invScale.z * (c2 * s1),
-                    invScale.z * (-s2),
-                    invScale.z * (c1 * c2),
-            },
+        {
+            invScale.x * (c1 * c3 + s1 * s2 * s3),
+            invScale.x * (c2 * s3),
+            invScale.x * (c1 * s2 * s3 - c3 * s1),
+        },
+        {
+            invScale.y * (c3 * s1 * s2 - c1 * s3),
+            invScale.y * (c2 * c3),
+            invScale.y * (c1 * c3 * s2 + s1 * s3),
+        },
+        {
+            invScale.z * (c2 * s1),
+            invScale.z * (-s2),
+            invScale.z * (c1 * c2),
+        },
     };
 }
 

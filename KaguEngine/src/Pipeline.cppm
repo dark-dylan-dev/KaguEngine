@@ -5,17 +5,12 @@ module;
 
 // std
 #include <cassert>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-export module Pipeline;
+import std.compat;
 
 import Device;
 import Model;
+
+export module Pipeline;
 
 export namespace KaguEngine {
 

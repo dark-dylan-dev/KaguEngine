@@ -1,5 +1,4 @@
-#include <iostream>
-#include <stdexcept>
+import std;
 
 import App;
 

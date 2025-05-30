@@ -5,11 +5,11 @@ module;
 
 // std
 #include <cassert>
-#include <cstring>
-
-export module Buffer;
+import std.compat;
 
 import Device;
+
+export module Buffer;
 
 export namespace KaguEngine {
 

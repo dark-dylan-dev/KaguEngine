@@ -6,8 +6,8 @@ module;
 #include <glm/glm.hpp>
 
 // std
-#include <cassert>
-#include <cmath>
+import std;
+import std.compat;
 
 export module Camera;
 

@@ -11,13 +11,7 @@ module;
 #include <GLFW/glfw3.h>
 
 // std
-#include <chrono>
-#include <memory>
-#include <numeric>
-#include <vector>
-#include <stdexcept>
-
-export module App;
+import std;
 
 import Buffer;
 import Camera;
@@ -33,6 +27,8 @@ import SimpleRenderSystem;
 import SwapChain;
 import Texture;
 import Window;
+
+export module App;
 
 export namespace KaguEngine {
 
@@ -164,7 +160,7 @@ void App::run() {
 
 void App::loadGameObjects() {
     std::shared_ptr<Model> loadedModel;
-    std::shared_ptr<Texture> loadedTexture;
+    std::unique_ptr<Texture> loadedTexture;
 
     // Obamium
     loadedTexture = Texture::createTextureFromFile(
@@ -178,7 +174,7 @@ void App::loadGameObjects() {
 
     auto centralObamium = Entity::createEntity();
     centralObamium.model = loadedModel;
-    centralObamium.texture = loadedTexture;
+    centralObamium.texture = std::move(loadedTexture);
     centralObamium.material = centralObamium.texture->getMaterial();
     centralObamium.transform.translation = {0.0f, 0.0f, 0.0f};
     centralObamium.transform.scale = {1.f, 1.f, 1.f};
@@ -197,7 +193,7 @@ void App::loadGameObjects() {
 
     auto vikingRoom = Entity::createEntity();
     vikingRoom.model = loadedModel;
-    vikingRoom.texture = loadedTexture;
+    vikingRoom.texture = std::move(loadedTexture);
     vikingRoom.material = vikingRoom.texture->getMaterial();
     vikingRoom.transform.translation = {2.f, .0f, 2.f};
     vikingRoom.transform.scale = {1.f, 1.f, 1.f};
@@ -214,7 +210,7 @@ void App::loadGameObjects() {
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/base.obj");
     auto floor = Entity::createEntity();
     floor.model = loadedModel;
-    floor.texture = loadedTexture;
+    floor.texture = std::move(loadedTexture);
     floor.material = floor.texture->getMaterial();
     floor.transform.translation = {0.f, 0.5f, 0.f};
     floor.transform.scale = {1.f, 1.f, 1.f};

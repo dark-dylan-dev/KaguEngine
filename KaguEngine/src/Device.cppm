@@ -5,16 +5,11 @@ module;
 #include <GLFW/glfw3.h>
 
 // std
-#include <cstring>
-#include <iostream>
-#include <set>
-#include <string>
-#include <unordered_set>
-#include <vector>
-
-export module Device;
+import std.compat;
 
 import Window;
+
+export module Device;
 
 export namespace KaguEngine {
 

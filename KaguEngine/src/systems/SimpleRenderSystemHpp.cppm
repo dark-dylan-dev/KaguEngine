@@ -8,11 +8,8 @@ module;
 #include <vulkan/vulkan.h>
 
 // std
-#include <cassert>
-#include <memory>
-#include <ranges>
-#include <stdexcept>
-#include <vector>
+import std;
+import std.compat;
 
 export module SimpleRenderSystem;
 

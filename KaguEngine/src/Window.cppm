@@ -5,9 +5,7 @@ module;
 #include <GLFW/glfw3.h>
 
 // std
-#include <stdexcept>
-#include <string>
-#include <utility>
+import std;
 
 export module Window;
 

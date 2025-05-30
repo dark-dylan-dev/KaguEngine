@@ -9,11 +9,7 @@ module;
 #include <vulkan/vulkan.h>
 
 // std
-#include <map>
-#include <memory>
-#include <ranges>
-#include <stdexcept>
-#include <vector>
+import std;
 
 export module PointLightSystem;
 

@@ -1,8 +1,4 @@
-﻿# C++ 20 standard required
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
+﻿file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
 file(GLOB_RECURSE CPP_MODULES src/*.cppm)
 
 # Adding the executable
@@ -31,3 +27,4 @@ endif()
 
 target_include_directories(KaguEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan)
+target_compile_features(KaguEngine PRIVATE cxx_std_23 INTERFACE cxx_std_20)
