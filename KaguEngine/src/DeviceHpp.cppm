@@ -1,12 +1,17 @@
-#pragma once
+module;
 
-#include "Window.hpp"
+// Vulkan
+#include <vulkan/vulkan.h>
 
 // std
 #include <string>
 #include <vector>
 
-namespace KaguEngine {
+export module Device:Hpp;
+
+export import Window;
+
+export namespace KaguEngine {
 
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;

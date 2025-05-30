@@ -1,13 +1,22 @@
-#include "Device.hpp"
+module;
 
-// std headers
+// libs
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+// std
 #include <cstring>
 #include <iostream>
 #include <set>
 #include <unordered_set>
 
+export module Device;
+export import :Hpp;
+
+
 namespace KaguEngine {
 
+// Not exported due to internal linkage
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                     VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
@@ -16,6 +25,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 
     return VK_FALSE;
 }
+
+} // Namespace KaguEngine
+
+export namespace KaguEngine {
 
 VkResult CreateDebugUtilsMessengerEXT(const VkInstance instance,
                                       const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,

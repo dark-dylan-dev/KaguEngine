@@ -1,13 +1,17 @@
-#pragma once
+module;
 
-#include "Device.hpp"
+#include <vulkan/vulkan.h>
 
 // std
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-namespace KaguEngine {
+export module Descriptor:Hpp;
+
+export import Device;
+
+export namespace KaguEngine {
 
 class DescriptorSetLayout {
 public:

@@ -1,10 +1,19 @@
-#include "Renderer.hpp"
+module;
 
+// libs
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 // std
 #include <array>
+#include <cassert>
+#include <cstring>
+#include <memory>
 #include <stdexcept>
 
-namespace KaguEngine {
+export module Renderer;
+export import :Hpp;
+
+export namespace KaguEngine {
 
 Renderer::Renderer(Window &window, Device &device) : windowRef{window}, deviceRef{device} {
     recreateSwapChain();

@@ -1,16 +1,20 @@
-#pragma once
+module;
 
-#include "../Camera.hpp"
-#include "../Device.hpp"
-#include "../Entity.hpp"
-#include "../FrameInfo.hpp"
-#include "../Pipeline.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
 // std
 #include <memory>
-#include <vector>
 
-namespace KaguEngine {
+export module SimpleRenderSystem:Hpp;
+
+export import Camera;
+export import Device;
+export import Entity;
+export import FrameInfo;
+export import Pipeline;
+
+export namespace KaguEngine {
 
 class SimpleRenderSystem {
 public:

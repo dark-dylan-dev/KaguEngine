@@ -1,8 +1,11 @@
-#include "Pipeline.hpp"
+module;
 
-#include "Model.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
 // std
+#include <cassert>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -11,7 +14,12 @@
 #define ENGINE_DIR "../"
 #endif
 
-namespace KaguEngine {
+export module Pipeline;
+export import :Hpp;
+
+import Model;
+
+export namespace KaguEngine {
 
 Pipeline::Pipeline(Device &device, const std::string &vertFilepath, const std::string &fragFilepath,
                    const PipelineConfigInfo &configInfo) : m_Device{device} {

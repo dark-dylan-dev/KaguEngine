@@ -1,11 +1,15 @@
-#pragma once
+module;
 
+// libs
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+// std
 #include <string>
 
-namespace KaguEngine {
+export module Window:Hpp;
+
+export namespace KaguEngine {
 
 class Window {
 public:

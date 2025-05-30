@@ -1,10 +1,20 @@
-#include "MovementController.hpp"
+module;
+
+// libs
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 // std
 #include <cmath>
 #include <limits>
 
-namespace KaguEngine {
+export module MovementController;
+export import :Hpp;
+
+export namespace KaguEngine {
 
 void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, const float dt, Entity& entity) const {
     glm::vec3 rotate{0};

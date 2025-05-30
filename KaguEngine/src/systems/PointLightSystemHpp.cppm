@@ -1,13 +1,18 @@
-#pragma once
+module;
 
-#include "../Device.hpp"
-#include "../FrameInfo.hpp"
-#include "../Pipeline.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
 // std
 #include <memory>
 
-namespace KaguEngine {
+export module PointLightSystem:Hpp;
+
+export import Device;
+export import FrameInfo;
+export import Pipeline;
+
+export namespace KaguEngine {
 
 class PointLightSystem {
 public:

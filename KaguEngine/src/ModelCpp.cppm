@@ -1,30 +1,43 @@
-#include "Model.hpp"
-
-#include "Utils.hpp"
+module;
 
 // libs
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
+#include <vulkan/vulkan.h>
+
 // std
+#include <memory>
 #include <unordered_map>
 
 #ifndef ENGINE_DIR
 #define ENGINE_DIR "../"
 #endif
 
+export module Model;
+export import :Hpp;
+
+import Utils;
+import Texture;
+
+export {
+namespace std {
 template<>
-struct std::hash<KaguEngine::Model::Vertex> {
+struct hash<KaguEngine::Model::Vertex> {
     size_t operator()(KaguEngine::Model::Vertex const &vertex) const noexcept {
         size_t seed = 0;
         KaguEngine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
         return seed;
     }
 };
+}
 
-namespace KaguEngine {
+}
+
+export namespace KaguEngine {
 
 Model::Model(Device& device, const Builder& builder) : deviceRef{device} {
     createVertexBuffers(builder.vertices);

@@ -1,16 +1,23 @@
-#include "SimpleRenderSystem.hpp"
+module;
 
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#include <vulkan/vulkan.h>
+
 // std
 #include <cassert>
+#include <memory>
 #include <ranges>
 #include <stdexcept>
+#include <vector>
 
-namespace KaguEngine {
+export module SimpleRenderSystem;
+export import :Hpp;
+
+export namespace KaguEngine {
 
 struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f};
@@ -32,8 +39,8 @@ SimpleRenderSystem::~SimpleRenderSystem() {
     vkDestroyPipelineLayout(m_Device.device(), m_pipelineLayout, nullptr);
 }
 
-void SimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout,
-                                              VkDescriptorSetLayout materialSetLayout) {
+void SimpleRenderSystem::createPipelineLayout(const VkDescriptorSetLayout globalSetLayout,
+                                              const VkDescriptorSetLayout materialSetLayout) {
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;

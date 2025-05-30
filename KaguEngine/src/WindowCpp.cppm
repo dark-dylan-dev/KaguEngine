@@ -1,10 +1,17 @@
-#include "Window.hpp"
+module;
+
+// libs
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 // std
 #include <stdexcept>
 #include <utility>
 
-namespace KaguEngine {
+export module Window;
+export import :Hpp;
+
+export namespace KaguEngine {
 
 Window::Window(const int w, const int h, std::string name) : m_Width{w}, m_Height{h}, m_WindowName{std::move(name)} {
     initWindow();

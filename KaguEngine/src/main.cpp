@@ -1,4 +1,7 @@
-#include "App.hpp"
+#include <iostream>
+#include <stdexcept>
+
+import App;
 
 int main() {
     try {

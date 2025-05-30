@@ -1,15 +1,20 @@
-#pragma once
+module;
 
-#include "Device.hpp"
-#include "SwapChain.hpp"
-#include "Window.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
 // std
 #include <cassert>
 #include <memory>
 #include <vector>
 
-namespace KaguEngine {
+export module Renderer:Hpp;
+
+export import Device;
+export import SwapChain;
+export import Window;
+
+export namespace KaguEngine {
 
 class Renderer {
 public:

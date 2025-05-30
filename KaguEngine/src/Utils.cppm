@@ -1,8 +1,10 @@
-#pragma once
+module;
 
 #include <functional>
 
-namespace KaguEngine {
+export module Utils;
+
+export namespace KaguEngine {
 
 // from: https://stackoverflow.com/a/57595105
 template<typename T, typename... Rest>

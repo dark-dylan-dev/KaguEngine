@@ -1,41 +1,32 @@
-#include "App.hpp"
-
-#include "Buffer.hpp"
-#include "Camera.hpp"
-#include "MovementController.hpp"
-#include "Texture.hpp"
-#include "systems/PointLightSystem.hpp"
-#include "systems/SimpleRenderSystem.hpp"
+module;
 
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 // std
 #include <chrono>
 #include <numeric>
+#include <vector>
 #include <stdexcept>
 
-namespace KaguEngine {
+export module App;
+export import :Hpp;
 
-App::App() {
-    m_GlobalSetLayout = DescriptorSetLayout::Builder(m_Device)
-        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-        .build();
-    m_MaterialSetLayout = DescriptorSetLayout::Builder(m_Device)
-        .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-        .build();
-    m_DescriptorPool = DescriptorPool::Builder(m_Device)
-        .setMaxSets(1000) // Arbitrary value
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
-        .build();
-    loadGameObjects();
-}
+import Buffer;
+import Camera;
+import MovementController;
+import PointLightSystem;
+import SimpleRenderSystem;
+import Texture;
 
-App::~App() = default;
+export namespace KaguEngine {
 
 void App::run() {
     std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);

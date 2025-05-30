@@ -1,16 +1,18 @@
-#pragma once
+module;
 
-#include "Device.hpp"
-
-// vulkan headers
+// libs
 #include <vulkan/vulkan.h>
 
-// std lib headers
+// std
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace KaguEngine {
+export module SwapChain:Hpp;
+
+export import Device;
+
+export namespace KaguEngine {
 
 class SwapChain {
 public:

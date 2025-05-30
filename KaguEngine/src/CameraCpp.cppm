@@ -1,10 +1,16 @@
-#include "Camera.hpp"
+module;
+
+// GLM
+#include <glm/glm.hpp>
 
 // std
 #include <cassert>
 #include <cmath>
 
-namespace KaguEngine {
+export module Camera;
+export import :Hpp;
+
+export namespace KaguEngine {
 
 void Camera::setOrthographicProjection(const float left, const float right, const float top, const float bottom,
                                        const float near, const float far) {

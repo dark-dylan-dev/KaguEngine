@@ -1,11 +1,22 @@
-#include "Descriptor.hpp"
+module;
+
+// Vulkan
+#include <vulkan/vulkan.h>
 
 // std
 #include <cassert>
+#include <memory>
 #include <ranges>
+#include <unordered_map>
+#include <vector>
 #include <stdexcept>
 
-namespace KaguEngine {
+export module Descriptor;
+export import :Hpp;
+
+export import Device;
+
+export namespace KaguEngine {
 
 DescriptorSetLayout::Builder &DescriptorSetLayout::Builder::addBinding(const uint32_t binding,
                                                                        const VkDescriptorType descriptorType,

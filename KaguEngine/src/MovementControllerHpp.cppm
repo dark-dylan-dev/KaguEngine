@@ -1,9 +1,13 @@
-#pragma once
+module;
 
-#include "Entity.hpp"
-#include "Window.hpp"
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
-namespace KaguEngine {
+export module MovementController:Hpp;
+
+export import Entity;
+
+export namespace KaguEngine {
 
 class KeyboardMovementController {
 public:

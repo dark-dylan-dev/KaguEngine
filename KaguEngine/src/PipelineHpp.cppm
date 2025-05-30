@@ -1,12 +1,17 @@
-#pragma once
+module;
 
-#include "Device.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
 // std
 #include <string>
 #include <vector>
 
-namespace KaguEngine {
+export module Pipeline:Hpp;
+
+export import Device;
+
+export namespace KaguEngine {
 
 struct PipelineConfigInfo {
     PipelineConfigInfo() = default;

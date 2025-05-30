@@ -1,9 +1,16 @@
-#include "Buffer.hpp"
+module;
 
+// Vulkan
+#include <vulkan/vulkan.h>
+
+// std
 #include <cassert>
 #include <cstring>
 
-namespace KaguEngine {
+export module Buffer;
+export import :Hpp;
+
+export namespace KaguEngine {
 
 VkDeviceSize Buffer::getAlignment(const VkDeviceSize instanceSize, const VkDeviceSize minOffsetAlignment) {
     if (minOffsetAlignment > 0) {

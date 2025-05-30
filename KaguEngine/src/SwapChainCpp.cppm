@@ -1,13 +1,20 @@
-#include "SwapChain.hpp"
+module;
+
+// libs
+#include <vulkan/vulkan.h>
 
 // std
 #include <array>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <limits>
 #include <stdexcept>
 
-namespace KaguEngine {
+export module SwapChain;
+export import :Hpp;
+
+export namespace KaguEngine {
 
 SwapChain::SwapChain(Device &deviceRef, const VkExtent2D windowExtent) :
     deviceRef{deviceRef}, m_WindowExtent{windowExtent} {
@@ -15,7 +22,7 @@ SwapChain::SwapChain(Device &deviceRef, const VkExtent2D windowExtent) :
 }
 
 SwapChain::SwapChain(Device &deviceRef, const VkExtent2D windowExtent, const std::shared_ptr<SwapChain> previous) :
-    deviceRef{deviceRef}, m_WindowExtent{windowExtent}, m_OldSwapChain{previous} {
+    m_OldSwapChain{previous}, m_WindowExtent{windowExtent}, deviceRef{deviceRef} {
     init();
     m_OldSwapChain = nullptr;
 }
@@ -358,7 +365,7 @@ void SwapChain::createDepthResources() {
 }
 
 void SwapChain::createColorResources() {
-    VkFormat colorFormat = m_SwapChainImageFormat;
+    const VkFormat colorFormat = m_SwapChainImageFormat;
 
     m_ColorImages.resize(imageCount());
     m_ColorImageMemories.resize(imageCount());

@@ -1,8 +1,12 @@
-#pragma once
+module;
 
-#include "Device.hpp"
+#include <vulkan/vulkan.h>
 
-namespace KaguEngine {
+export module Buffer:Hpp;
+
+export import Device;
+
+export namespace KaguEngine {
 
 class Buffer {
 public:
