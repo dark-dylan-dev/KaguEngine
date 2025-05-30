@@ -6,8 +6,8 @@ module;
 
 export module FrameInfo;
 
-export import Camera;
-export import Entity;
+import Camera;
+import Entity;
 
 export namespace KaguEngine {
 

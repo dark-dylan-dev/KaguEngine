@@ -12,19 +12,75 @@ module;
 
 // std
 #include <chrono>
+#include <memory>
 #include <numeric>
 #include <vector>
 #include <stdexcept>
 
 export module App;
-export import :Hpp;
 
 import Buffer;
 import Camera;
+import Descriptor;
+import Device;
+import Entity;
+import FrameInfo;
+import Model;
 import MovementController;
 import PointLightSystem;
+import Renderer;
 import SimpleRenderSystem;
+import SwapChain;
 import Texture;
+import Window;
+
+export namespace KaguEngine {
+
+class App {
+public:
+    static constexpr int WIDTH = 800;
+    static constexpr int HEIGHT = 600;
+
+    App() {
+        m_GlobalSetLayout = DescriptorSetLayout::Builder(m_Device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+            .build();
+        m_MaterialSetLayout = DescriptorSetLayout::Builder(m_Device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
+        m_DescriptorPool = DescriptorPool::Builder(m_Device)
+            .setMaxSets(1000) // Arbitrary value
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
+            .build();
+        loadGameObjects();
+    };
+    ~App() = default;
+
+    App(const App &) = delete;
+    App &operator=(const App &) = delete;
+
+    void run();
+
+private:
+    void loadGameObjects();
+
+    Window m_Window{WIDTH, HEIGHT, "Kagu Engine"};
+    Device m_Device{m_Window};
+    Renderer m_Renderer{m_Window, m_Device};
+
+    // note: order of declarations matters
+    //  - class destroyed from bottom to top
+    //  - entities -> pool -> material set -> global set
+    std::unique_ptr<DescriptorSetLayout> m_GlobalSetLayout{};
+    std::unique_ptr<DescriptorSetLayout> m_MaterialSetLayout{};
+    std::unique_ptr<DescriptorPool> m_DescriptorPool{};
+    Entity::Map m_SceneEntities;
+};
+
+} // Namespace KaguEngine
+
+// .cpp part
 
 export namespace KaguEngine {
 
@@ -108,7 +164,7 @@ void App::run() {
 
 void App::loadGameObjects() {
     std::shared_ptr<Model> loadedModel;
-    std::unique_ptr<Texture> loadedTexture;
+    std::shared_ptr<Texture> loadedTexture;
 
     // Obamium
     loadedTexture = Texture::createTextureFromFile(
@@ -122,7 +178,7 @@ void App::loadGameObjects() {
 
     auto centralObamium = Entity::createEntity();
     centralObamium.model = loadedModel;
-    centralObamium.texture = std::move(loadedTexture);
+    centralObamium.texture = loadedTexture;
     centralObamium.material = centralObamium.texture->getMaterial();
     centralObamium.transform.translation = {0.0f, 0.0f, 0.0f};
     centralObamium.transform.scale = {1.f, 1.f, 1.f};
@@ -141,7 +197,7 @@ void App::loadGameObjects() {
 
     auto vikingRoom = Entity::createEntity();
     vikingRoom.model = loadedModel;
-    vikingRoom.texture = std::move(loadedTexture);
+    vikingRoom.texture = loadedTexture;
     vikingRoom.material = vikingRoom.texture->getMaterial();
     vikingRoom.transform.translation = {2.f, .0f, 2.f};
     vikingRoom.transform.scale = {1.f, 1.f, 1.f};
@@ -158,7 +214,7 @@ void App::loadGameObjects() {
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/base.obj");
     auto floor = Entity::createEntity();
     floor.model = loadedModel;
-    floor.texture = std::move(loadedTexture);
+    floor.texture = loadedTexture;
     floor.material = floor.texture->getMaterial();
     floor.transform.translation = {0.f, 0.5f, 0.f};
     floor.transform.scale = {1.f, 1.f, 1.f};

@@ -14,8 +14,8 @@ module;
 
 export module Texture;
 
-export import Device;
-export import SwapChain;
+import Device;
+import SwapChain;
 
 export namespace KaguEngine {
 
@@ -80,7 +80,6 @@ export namespace KaguEngine {
 Texture::Texture(Device& device, SwapChain& swapChain, const std::string& filepath,
                  VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool descriptorPool)
     : deviceRef{device}, swapChainRef{swapChain} {
-    std::cout << "Texture created | Filepath : " << filepath << '\n';
     loadTexture(filepath);
     createTextureImageView();
     createTextureSampler();
@@ -88,7 +87,6 @@ Texture::Texture(Device& device, SwapChain& swapChain, const std::string& filepa
 }
 
 Texture::~Texture() {
-    std::cout << "Texture destroyed\n";
     if (m_TextureSampler != VK_NULL_HANDLE) {
         vkDestroySampler(deviceRef.device(), m_TextureSampler, nullptr);
     }

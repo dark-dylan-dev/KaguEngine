@@ -10,8 +10,8 @@ module;
 
 export module Entity;
 
-export import Model;
-export import Texture;
+import Model;
+import Texture;
 
 export namespace KaguEngine {
 
@@ -43,11 +43,10 @@ public:
 
     static Entity makePointLight(float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f));
 
-    // Non copyable, movable
+    // Non copyable
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
     Entity(Entity &&) = default;
-    Entity &operator=(Entity &&) = default;
 
     [[nodiscard]] id_t getId() const { return m_Id; }
 
@@ -55,7 +54,7 @@ public:
     TransformComponent transform{};
 
     // Optional pointer components
-    std::unique_ptr<Texture> texture = nullptr;
+    std::shared_ptr<Texture> texture{};
     std::shared_ptr<Model> model{};
     Texture::Material material{};
     std::unique_ptr<PointLightComponent> pointLight = nullptr;
@@ -134,7 +133,7 @@ Entity Entity::makePointLight(const float intensity, const float radius, const g
     lightEntity.transform.scale.x = radius;
     lightEntity.pointLight = std::make_unique<PointLightComponent>();
     lightEntity.pointLight->lightIntensity = intensity;
-    return lightEntity;
+    return lightEntity; // rvalue
 }
 
 } // Namespace KaguEngine
