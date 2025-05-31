@@ -10,7 +10,7 @@ import std.compat;
 import KaguEngine.Device;
 import KaguEngine.Model;
 
-export module Pipeline;
+export module KaguEngine.Pipeline;
 
 export namespace KaguEngine {
 
@@ -48,6 +48,7 @@ public:
 
     static void defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
     static void enableAlphaBlending(PipelineConfigInfo &configInfo);
+    static void enableMSAA(PipelineConfigInfo &configInfo, const VkSampleCountFlagBits &msaaLevel);
 
 private:
     static std::vector<char> readFile(const std::string &filepath);
@@ -259,6 +260,10 @@ void Pipeline::enableAlphaBlending(PipelineConfigInfo &configInfo) {
     configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+}
+
+void Pipeline::enableMSAA(PipelineConfigInfo &configInfo, const VkSampleCountFlagBits &msaaLevel) {
+    configInfo.multisampleInfo.rasterizationSamples = msaaLevel;
 }
 
 } // Namespace KaguEngine

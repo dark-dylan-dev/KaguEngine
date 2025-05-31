@@ -17,19 +17,19 @@ import KaguEngine.Camera;
 import KaguEngine.Device;
 import KaguEngine.Entity;
 import KaguEngine.FrameInfo;
-import Pipeline;
+import KaguEngine.Pipeline;
 
 export namespace KaguEngine {
 
-class SimpleRenderSystem {
+class RenderSystem {
 public:
-    SimpleRenderSystem(Device &device, VkRenderPass renderPass,
+    RenderSystem(Device &device, VkRenderPass renderPass,
                    VkDescriptorSetLayout globalSetLayout,
                    VkDescriptorSetLayout materialSetLayout);
-    ~SimpleRenderSystem();
+    ~RenderSystem();
 
-    SimpleRenderSystem(const SimpleRenderSystem &) = delete;
-    SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
+    RenderSystem(const RenderSystem &) = delete;
+    RenderSystem &operator=(const RenderSystem &) = delete;
 
     void renderGameObjects(const FrameInfo &frameInfo) const;
 
@@ -54,7 +54,7 @@ struct SimplePushConstantData {
     glm::mat4 normalMatrix{1.f};
 };
 
-SimpleRenderSystem::SimpleRenderSystem(
+RenderSystem::RenderSystem(
     Device &device,
     const VkRenderPass renderPass,
     const VkDescriptorSetLayout globalSetLayout,
@@ -65,11 +65,11 @@ SimpleRenderSystem::SimpleRenderSystem(
     createPipeline(renderPass);
 }
 
-SimpleRenderSystem::~SimpleRenderSystem() {
+RenderSystem::~RenderSystem() {
     vkDestroyPipelineLayout(m_Device.device(), m_pipelineLayout, nullptr);
 }
 
-void SimpleRenderSystem::createPipelineLayout(const VkDescriptorSetLayout globalSetLayout,
+void RenderSystem::createPipelineLayout(const VkDescriptorSetLayout globalSetLayout,
                                               const VkDescriptorSetLayout materialSetLayout) {
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -93,14 +93,14 @@ void SimpleRenderSystem::createPipelineLayout(const VkDescriptorSetLayout global
     }
 }
 
-void SimpleRenderSystem::createPipeline(const VkRenderPass renderPass) {
+void RenderSystem::createPipeline(const VkRenderPass renderPass) {
     assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+    Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
-    pipelineConfig.multisampleInfo.rasterizationSamples = m_Device.getSampleCount();
     m_Pipeline = std::make_unique<Pipeline>(
         m_Device,
         "assets/shaders/simple_shader.vert.spv",
@@ -108,10 +108,10 @@ void SimpleRenderSystem::createPipeline(const VkRenderPass renderPass) {
         pipelineConfig);
 }
 
-void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
+void RenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
     m_Pipeline->bind(frameInfo.commandBuffer);
 
-    // Bind global descriptor set (set = 0)
+    // Global descriptor set (set = 0)
     vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                             m_pipelineLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
 
@@ -119,6 +119,7 @@ void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
         auto &obj = val;
         if (!obj.model) continue;
 
+        // Texture descriptor set (set = 1)
         vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 m_pipelineLayout, 1, 1, &obj.material.descriptorSet, 0, nullptr);
 

@@ -82,6 +82,7 @@ private:
 
     // helper functions
     bool isDeviceSuitable(VkPhysicalDevice device) const;
+    int rateDeviceSuitability(VkPhysicalDevice device) const;
     [[nodiscard]] std::vector<const char *> getRequiredExtensions() const;
     [[nodiscard]] bool checkValidationLayerSupport() const;
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
@@ -219,24 +220,60 @@ void Device::pickPhysicalDevice() {
     if (deviceCount == 0) {
         throw std::runtime_error("Failed to find GPUs with Vulkan support!");
     }
-    std::cout << "Device count: " << deviceCount << std::endl;
+
+    std::cout << "Picking physical device..." << '\n';
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
 
+    std::multimap<int, VkPhysicalDevice> candidates;
     for (const auto &device: devices) {
-        if (isDeviceSuitable(device)) {
-            m_PhysicalDevice = device;
-            m_MSAASamples = getMaxUsableSampleCount();
-            break;
-        }
+        int score = rateDeviceSuitability(device);
+        candidates.insert(std::make_pair(score, device));
     }
 
-    if (m_PhysicalDevice == VK_NULL_HANDLE) {
+    // Check if the best candidate is suitable at all
+    if (candidates.rbegin()->first > 0) {
+        m_PhysicalDevice = candidates.rbegin()->second;
+        m_MSAASamples = getMaxUsableSampleCount();
+    } else {
         throw std::runtime_error("Failed to find a suitable GPU!");
     }
 
     vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
-    std::cout << "Physical device : " << properties.deviceName << std::endl;
+
+    std::cout << " - Chosen device is " << properties.deviceName << " with a score of " << candidates.rbegin()->first << '\n';
+    std::cout << " - MSAAx" << getMaxUsableSampleCount() << '\n';
+}
+
+int Device::rateDeviceSuitability(const VkPhysicalDevice device) const {
+    VkPhysicalDeviceProperties supportedProperties;
+    VkPhysicalDeviceFeatures supportedFeatures;
+    vkGetPhysicalDeviceProperties(device, &supportedProperties);
+    vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+    const QueueFamilyIndices indices = findQueueFamilies(device);
+
+    const bool extensionsSupported = checkDeviceExtensionSupport(device);
+    bool swapChainAdequate = false;
+    if (extensionsSupported) {
+        const SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    }
+
+    int score = 0;
+    // Type and maximum quality both affect the score.
+    if (supportedProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+        score += 10000;
+    }
+    score += static_cast<int>(supportedProperties.limits.maxImageDimension2D);
+
+    // Check for needed features, the engine can't work without them.
+    if (!(indices.isComplete() && extensionsSupported && swapChainAdequate &&
+        supportedFeatures.geometryShader && supportedFeatures.samplerAnisotropy)) {
+        return 0;
+    }
+
+    return score;
 }
 
 void Device::createLogicalDevice() {
@@ -290,23 +327,6 @@ void Device::createCommandPool() {
 }
 
 void Device::createSurface() { windowRef.createWindowSurface(m_Instance, &m_Surface); }
-
-bool Device::isDeviceSuitable(const VkPhysicalDevice device) const {
-    const QueueFamilyIndices indices = findQueueFamilies(device);
-
-    const bool extensionsSupported = checkDeviceExtensionSupport(device);
-
-    bool swapChainAdequate = false;
-    if (extensionsSupported) {
-        const SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-    }
-
-    VkPhysicalDeviceFeatures supportedFeatures;
-    vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
-
-    return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
-}
 
 void Device::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
     createInfo = {};
@@ -374,16 +394,16 @@ void Device::hasGLFWRequiredInstanceExtensions() const {
     std::vector<VkExtensionProperties> extensions(extensionCount);
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-    // std::cout << "Available extensions:" << std::endl;
+    // std::cout << "Available extensions:" << '\n';
     std::unordered_set<std::string> available;
     for (const auto &[extensionName, specVersion]: extensions) {
-        // std::cout << "\t" << extensionName << std::endl;
+        // std::cout << "\t" << extensionName << '\n';
         available.insert(extensionName);
     }
 
-    // std::cout << "Required extensions:" << std::endl;
+    // std::cout << "Required extensions:" << '\n';
     for (const auto requiredExtensions = getRequiredExtensions(); const auto &required: requiredExtensions) {
-        // std::cout << "\t" << required << std::endl;
+        // std::cout << "\t" << required << '\n';
         if (!available.contains(required)) {
             throw std::runtime_error("Missing required GLFW extension");
         }

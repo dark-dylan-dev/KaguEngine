@@ -98,7 +98,7 @@ void App::run() {
             .build(globalDescriptorSets[i]);
     }
 
-    SimpleRenderSystem simpleRenderSystem{
+    RenderSystem renderSystem{
         m_Device,
         m_Renderer.getSwapChainRenderPass(),
         m_GlobalSetLayout->getDescriptorSetLayout(),    // set = 0 (UBO)
@@ -149,7 +149,7 @@ void App::run() {
             m_Renderer.beginSwapChainRenderPass(commandBuffer);
 
             // order here matters
-            simpleRenderSystem.renderGameObjects(frameInfo);
+            renderSystem.renderGameObjects(frameInfo);
             pointLightSystem.render(frameInfo);
 
             m_Renderer.endSwapChainRenderPass(commandBuffer);
@@ -190,11 +190,12 @@ void App::loadGameObjects() {
     vikingRoom.model = loadedModel;
     vikingRoom.texture = std::move(vikingRoomTexture);
     vikingRoom.material = vikingRoom.texture->getMaterial();
-    vikingRoom.transform.translation = {2.f, .0f, 2.f};
+    vikingRoom.transform.translation = {2.f, 0.f, 2.f};
     vikingRoom.transform.scale = {1.f, 1.f, 1.f};
     vikingRoom.transform.rotation = {3.14159265f / 2.f, 0.f, 3.14159265f};
     m_SceneEntities.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
+    // Floor
     auto dummyTexture = Texture::makeDummyTexture(
         m_Device,
         *m_Renderer.getSwapChain(),

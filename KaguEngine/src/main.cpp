@@ -8,6 +8,6 @@ int main() {
         Engine.run();
     }
     catch (std::exception& error) {
-        std::cerr << error.what() << std::endl;
+        std::cerr << error.what() << '\n';
     }
 }
