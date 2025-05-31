@@ -13,20 +13,20 @@ module;
 // std
 import std;
 
-import Buffer;
-import Camera;
-import Descriptor;
-import Device;
-import Entity;
-import FrameInfo;
-import Model;
-import MovementController;
-import PointLightSystem;
-import Renderer;
-import SimpleRenderSystem;
-import SwapChain;
-import Texture;
-import Window;
+import KaguEngine.Buffer;
+import KaguEngine.Camera;
+import KaguEngine.Descriptor;
+import KaguEngine.Device;
+import KaguEngine.Entity;
+import KaguEngine.FrameInfo;
+import KaguEngine.Model;
+import KaguEngine.MovementController;
+import KaguEngine.Renderer;
+import KaguEngine.System.PointLight;
+import KaguEngine.System.Render;
+import KaguEngine.SwapChain;
+import KaguEngine.Texture;
+import KaguEngine.Window;
 
 export module App;
 
@@ -51,7 +51,9 @@ public:
             .build();
         loadGameObjects();
     };
-    ~App() = default;
+    ~App() {
+        std::erase_if(m_SceneEntities, [](const auto&) { return true; });
+    }
 
     App(const App &) = delete;
     App &operator=(const App &) = delete;
@@ -160,21 +162,17 @@ void App::run() {
 
 void App::loadGameObjects() {
     std::shared_ptr<Model> loadedModel;
-    std::unique_ptr<Texture> loadedTexture;
 
     // Obamium
-    loadedTexture = Texture::createTextureFromFile(
-        m_Device,
-        *m_Renderer.getSwapChain(),
-        "assets/textures/obamium_texture.png",
-        m_MaterialSetLayout->getDescriptorSetLayout(),
+    auto obamiumTexture = Texture::createTextureFromFile(m_Device, *m_Renderer.getSwapChain(),
+        "assets/textures/obamium_texture.png", m_MaterialSetLayout->getDescriptorSetLayout(),
         m_DescriptorPool->getDescriptorPool()
     );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/obamium_model.obj");
 
     auto centralObamium = Entity::createEntity();
     centralObamium.model = loadedModel;
-    centralObamium.texture = std::move(loadedTexture);
+    centralObamium.texture = std::move(obamiumTexture);
     centralObamium.material = centralObamium.texture->getMaterial();
     centralObamium.transform.translation = {0.0f, 0.0f, 0.0f};
     centralObamium.transform.scale = {1.f, 1.f, 1.f};
@@ -182,35 +180,31 @@ void App::loadGameObjects() {
     m_SceneEntities.emplace(centralObamium.getId(), std::move(centralObamium));
 
     // Viking room
-    loadedTexture = Texture::createTextureFromFile(
-        m_Device,
-        *m_Renderer.getSwapChain(),
-        "assets/textures/viking_room.png",
-        m_MaterialSetLayout->getDescriptorSetLayout(),
+    auto vikingRoomTexture = Texture::createTextureFromFile(m_Device, *m_Renderer.getSwapChain(),
+        "assets/textures/viking_room.png", m_MaterialSetLayout->getDescriptorSetLayout(),
         m_DescriptorPool->getDescriptorPool()
     );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/viking_room.obj");
 
     auto vikingRoom = Entity::createEntity();
     vikingRoom.model = loadedModel;
-    vikingRoom.texture = std::move(loadedTexture);
+    vikingRoom.texture = std::move(vikingRoomTexture);
     vikingRoom.material = vikingRoom.texture->getMaterial();
     vikingRoom.transform.translation = {2.f, .0f, 2.f};
     vikingRoom.transform.scale = {1.f, 1.f, 1.f};
     vikingRoom.transform.rotation = {3.14159265f / 2.f, 0.f, 3.14159265f};
     m_SceneEntities.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
-    loadedTexture = Texture::createTextureFromFile(
+    auto dummyTexture = Texture::makeDummyTexture(
         m_Device,
         *m_Renderer.getSwapChain(),
-        "assets/textures/dummy_texture.png",
         m_MaterialSetLayout->getDescriptorSetLayout(),
         m_DescriptorPool->getDescriptorPool()
     );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/base.obj");
     auto floor = Entity::createEntity();
     floor.model = loadedModel;
-    floor.texture = std::move(loadedTexture);
+    floor.texture = std::move(dummyTexture);
     floor.material = floor.texture->getMaterial();
     floor.transform.translation = {0.f, 0.5f, 0.f};
     floor.transform.scale = {1.f, 1.f, 1.f};

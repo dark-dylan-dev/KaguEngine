@@ -8,11 +8,11 @@ module;
 #include <cassert>
 import std.compat;
 
-import Device;
-import SwapChain;
-import Window;
+import KaguEngine.Device;
+import KaguEngine.SwapChain;
+import KaguEngine.Window;
 
-export module Renderer;
+export module KaguEngine.Renderer;
 
 export namespace KaguEngine {
 

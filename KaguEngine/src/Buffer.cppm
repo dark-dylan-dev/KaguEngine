@@ -7,9 +7,9 @@ module;
 #include <cassert>
 import std.compat;
 
-import Device;
+import KaguEngine.Device;
 
-export module Buffer;
+export module KaguEngine.Buffer;
 
 export namespace KaguEngine {
 

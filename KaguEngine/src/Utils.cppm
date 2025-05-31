@@ -1,8 +1,9 @@
 module;
 
-#include <functional>
+// std
+import std;
 
-export module Utils;
+export module KaguEngine.Utils;
 
 export namespace KaguEngine {
 

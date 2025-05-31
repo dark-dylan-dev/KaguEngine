@@ -7,9 +7,9 @@ module;
 import std;
 import std.compat;
 
-import Device;
+import KaguEngine.Device;
 
-export module SwapChain;
+export module KaguEngine.SwapChain;
 
 export namespace KaguEngine {
 
@@ -514,7 +514,7 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     for (const auto &availablePresentMode: availablePresentModes) {
         // Lower latency, but frames might be dropped
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            std::cout << "Present mode : Mailbox" << std::endl;
+            //std::cout << "Present mode : Mailbox" << std::endl;
             return availablePresentMode;
         }
     }
@@ -522,13 +522,13 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     for (const auto &availablePresentMode : availablePresentModes) {
         // V-Sync off
         if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-          std::cout << "Present mode: Immediate" << std::endl;
+          //std::cout << "Present mode: Immediate" << std::endl;
           return availablePresentMode;
         }
     }
 
     // No frames dropped, higher latency
-    std::cout << "Present mode: V-Sync" << std::endl;
+    //std::cout << "Present mode: V-Sync" << std::endl;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 

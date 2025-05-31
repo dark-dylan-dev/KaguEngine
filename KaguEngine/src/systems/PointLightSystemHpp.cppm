@@ -11,11 +11,11 @@ module;
 // std
 import std;
 
-export module PointLightSystem;
+export module KaguEngine.System.PointLight;
 
-import Device;
-import Entity;
-import FrameInfo;
+import KaguEngine.Device;
+import KaguEngine.Entity;
+import KaguEngine.FrameInfo;
 import Pipeline;
 
 export namespace KaguEngine {

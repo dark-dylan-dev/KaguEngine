@@ -27,4 +27,6 @@ endif()
 
 target_include_directories(KaguEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan)
-target_compile_features(KaguEngine PRIVATE cxx_std_23 INTERFACE cxx_std_20)
+
+# Enforces C++23 on the target
+target_compile_features(KaguEngine PRIVATE cxx_std_23)

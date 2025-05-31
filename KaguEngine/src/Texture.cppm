@@ -9,10 +9,10 @@ module;
 // std
 import std;
 
-import Device;
-import SwapChain;
+import KaguEngine.Device;
+import KaguEngine.SwapChain;
 
-export module Texture;
+export module KaguEngine.Texture;
 
 export {
 
@@ -32,10 +32,15 @@ public:
             VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool descriptorPool);
     ~Texture();
 
+    // Personalized texture
     static std::unique_ptr<Texture> createTextureFromFile(Device &device, SwapChain &swapChain,
                                                           const std::string &filepath,
                                                           VkDescriptorSetLayout descriptorSetLayout,
                                                           VkDescriptorPool descriptorPool);
+    // Dummy texture 1x1 pixel
+    static std::unique_ptr<Texture> makeDummyTexture(Device& device, SwapChain& swapChain,
+                                                     VkDescriptorSetLayout descriptorSetLayout,
+                                                     VkDescriptorPool descriptorPool);
 
     [[nodiscard]] const VkImage& getTextureImage()         const { return m_TextureImage; }
     [[nodiscard]] const VkDeviceMemory& getTextureMemory() const { return m_TextureImageMemory; }
@@ -78,7 +83,6 @@ namespace KaguEngine {
 Texture::Texture(Device &device, SwapChain &swapChain, const std::string &filepath,
                  VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool descriptorPool) :
     deviceRef{device}, swapChainRef{swapChain} {
-    std::cout << "Calling texture constructor for file : " << filepath << '\n';
     loadTexture(filepath);
     createTextureImageView();
     createTextureSampler();
@@ -86,7 +90,6 @@ Texture::Texture(Device &device, SwapChain &swapChain, const std::string &filepa
 }
 
 Texture::~Texture() {
-    std::cout << "Calling texture destructor";
     if (m_TextureSampler != VK_NULL_HANDLE) {
         vkDestroySampler(deviceRef.device(), m_TextureSampler, nullptr);
     }
@@ -105,11 +108,22 @@ std::unique_ptr<Texture> Texture::createTextureFromFile(Device &device, SwapChai
                                                         const std::string &filepath,
                                                         VkDescriptorSetLayout descriptorSetLayout,
                                                         VkDescriptorPool descriptorPool) {
-    std::cout << "Create texture from file : " << filepath << '\n';
     return std::make_unique<Texture>(device, swapChain, filepath, descriptorSetLayout, descriptorPool);
 }
 
+std::unique_ptr<Texture> Texture::makeDummyTexture(Device& device, SwapChain& swapChain,
+                                                   VkDescriptorSetLayout descriptorSetLayout,
+                                                   VkDescriptorPool descriptorPool) {
+    return std::make_unique<Texture>(device, swapChain, "assets/textures/dummy_texture.png",
+                                     descriptorSetLayout, descriptorPool);
+}
+
 void Texture::createMaterial(VkDescriptorSetLayout layout, VkDescriptorPool pool) {
+    if (m_TextureImage == VK_NULL_HANDLE) {
+        m_Material.descriptorSet = VK_NULL_HANDLE;
+        return;
+    }
+
     m_Material.textureView = m_TextureImageView;
     m_Material.textureSampler = m_TextureSampler;
 

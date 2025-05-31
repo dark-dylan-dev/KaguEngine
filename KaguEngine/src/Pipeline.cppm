@@ -7,8 +7,8 @@ module;
 #include <cassert>
 import std.compat;
 
-import Device;
-import Model;
+import KaguEngine.Device;
+import KaguEngine.Model;
 
 export module Pipeline;
 

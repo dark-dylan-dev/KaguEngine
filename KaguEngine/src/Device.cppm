@@ -7,9 +7,9 @@ module;
 // std
 import std.compat;
 
-import Window;
+import KaguEngine.Window;
 
-export module Device;
+export module KaguEngine.Device;
 
 export namespace KaguEngine {
 

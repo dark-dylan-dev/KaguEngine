@@ -7,7 +7,7 @@ module;
 // std
 import std;
 
-export module Window;
+export module KaguEngine.Window;
 
 export namespace KaguEngine {
 

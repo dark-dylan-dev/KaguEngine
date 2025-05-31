@@ -7,10 +7,10 @@ module;
 // std
 import std;
 
-import Model;
-import Texture;
+import KaguEngine.Model;
+import KaguEngine.Texture;
 
-export module Entity;
+export module KaguEngine.Entity;
 
 export namespace KaguEngine {
 
@@ -45,8 +45,18 @@ public:
     // Non copyable
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
-    Entity(Entity &&) = default;
-    Entity &operator=(Entity &&) = default;
+    Entity(Entity &&other) noexcept {
+        m_Id       = std::move(other.m_Id);
+        color      = std::move(other.color);
+        transform  = std::move(other.transform);
+        texture    = std::move(other.texture);
+        model      = std::move(other.model);
+        material   = std::move(other.material);
+        pointLight = std::move(other.pointLight);
+    }
+    Entity &operator=(Entity && other) noexcept {
+        return *this;
+    }
 
     [[nodiscard]] id_t getId() const { return m_Id; }
 

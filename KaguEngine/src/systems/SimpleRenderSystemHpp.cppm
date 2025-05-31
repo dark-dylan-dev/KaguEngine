@@ -11,12 +11,12 @@ module;
 import std;
 import std.compat;
 
-export module SimpleRenderSystem;
+export module KaguEngine.System.Render;
 
-import Camera;
-import Device;
-import Entity;
-import FrameInfo;
+import KaguEngine.Camera;
+import KaguEngine.Device;
+import KaguEngine.Entity;
+import KaguEngine.FrameInfo;
 import Pipeline;
 
 export namespace KaguEngine {
@@ -119,13 +119,8 @@ void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
         auto &obj = val;
         if (!obj.model) continue;
 
-        // Only binds material set if it exists
-        if (obj.material.descriptorSet != VK_NULL_HANDLE) {
-            vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    m_pipelineLayout, 1, 1, &obj.material.descriptorSet, 0, nullptr);
-        } else {
-            // Handles no material component
-        }
+        vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                m_pipelineLayout, 1, 1, &obj.material.descriptorSet, 0, nullptr);
 
         SimplePushConstantData push{};
         push.modelMatrix = obj.transform.mat4();

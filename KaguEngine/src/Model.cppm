@@ -15,12 +15,11 @@ module;
 // std
 import std;
 
-import Buffer;
-import Device;
-import Utils;
-import Texture;
+import KaguEngine.Buffer;
+import KaguEngine.Device;
+import KaguEngine.Utils;
 
-export module Model;
+export module KaguEngine.Model;
 
 export namespace KaguEngine {
 

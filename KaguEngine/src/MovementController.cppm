@@ -9,9 +9,9 @@ module;
 // std
 import std;
 
-import Entity;
+import KaguEngine.Entity;
 
-export module MovementController;
+export module KaguEngine.MovementController;
 
 export namespace KaguEngine {
 

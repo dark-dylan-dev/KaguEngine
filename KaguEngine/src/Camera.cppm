@@ -9,7 +9,7 @@ module;
 import std;
 import std.compat;
 
-export module Camera;
+export module KaguEngine.Camera;
 
 export namespace KaguEngine {
 
