@@ -55,14 +55,14 @@ jobs:
         sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
 
     - name: Install clang 19 on Ubuntu
-      if: runner.os == 'Linux' && runner.c_compiler == 'clang'
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get install ninja-build -y
         sudo apt-get install clang-19 clangd-19 libc++-19-dev clang-tools-19 -y
         python3 -m pip install cmake --break-system-packages
 
     - name: Install gcc 15 on Ubuntu
-      if: runner.os == 'Linux' && runner.c_compiler == 'gcc'
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get install ninja-build -y
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
