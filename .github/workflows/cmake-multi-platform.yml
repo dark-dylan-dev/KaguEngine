@@ -54,25 +54,26 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
 
-    - name: Install clang 19 on Ubuntu
-      if: runner.os == 'Linux'
+    - name: Install GCC 15 on Ubuntu
+      if: matrix.compiler == 'gcc'
       run: |
-        sudo apt-get install ninja-build -y
-        sudo apt-get install clang-19 clangd-19 libc++-19-dev clang-tools-19 -y
-        python3 -m pip install cmake --break-system-packages
-
-    - name: Install gcc 15 on Ubuntu
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get install ninja-build -y
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        sudo apt update
-        sudo apt install gcc-15 g++-15 -y
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 150
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 150
-        sudo update-alternatives --config gcc
-        sudo update-alternatives --config g++
-        python3 -m pip install cmake --break-system-packages
+        sudo apt-get update
+        sudo apt-get install -y gcc-15 g++-15
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
+
+    - name: Install Clang 19 and libc++ on Ubuntu
+      if: matrix.compiler == 'clang'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-19 libc++-19-dev libc++abi-19-dev
+        sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 100
+
+    - name: Set up MSVC cmd on Windows
+      if: matrix.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.2.1
