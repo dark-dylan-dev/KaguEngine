@@ -1,18 +1,28 @@
-#pragma once
+module;
 
-#include "../Device.hpp"
-#include "../FrameInfo.hpp"
-#include "../Pipeline.hpp"
+// libs
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <vulkan/vulkan.h>
 
 // std
-#include <memory>
+import std;
 
-namespace KaguEngine {
+export module KaguEngine.System.PointLight;
+
+import KaguEngine.Device;
+import KaguEngine.Entity;
+import KaguEngine.FrameInfo;
+import KaguEngine.Pipeline;
+
+export namespace KaguEngine {
 
 class PointLightSystem {
 public:
-    PointLightSystem(
-        Device &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+    PointLightSystem(Device &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
     ~PointLightSystem();
 
     PointLightSystem(const PointLightSystem &) = delete;

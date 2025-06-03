@@ -1,18 +1,27 @@
-#pragma once
-
-#include "Buffer.hpp"
-#include "Device.hpp"
+module;
 
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 #include <glm/glm.hpp>
 
-// std
-#include <memory>
-#include <vector>
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
 
-namespace KaguEngine {
+#include <vulkan/vulkan.h>
+
+// std
+import std;
+
+import KaguEngine.Buffer;
+import KaguEngine.Device;
+import KaguEngine.Utils;
+
+export module KaguEngine.Model;
+
+export namespace KaguEngine {
 
 class Model {
 public:
@@ -67,3 +76,18 @@ private:
 };
 
 } // Namespace KaguEngine
+
+// .cpp part
+
+export {
+namespace std {
+template<>
+struct hash<KaguEngine::Model::Vertex> {
+    size_t operator()(KaguEngine::Model::Vertex const &vertex) const noexcept {
+        size_t seed = 0;
+        KaguEngine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
+        return seed;
+    }
+};
+}
+}

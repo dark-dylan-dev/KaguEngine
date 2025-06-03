@@ -371,5 +371,11 @@ FodyWeavers.xsd
 /.clang-format
 
 # Build directory unignore (.spv and .obj files)
-!/build/assets/shaders/*
-!/build/assets/models/*
+!/build/assets/models/*.obj
+!/build/assets/shaders/*.spv
+
+# CMake binary directories
+/cmake-build-debug/
+/cmake-build-minsizerel/
+/cmake-build-release/
+/cmake-build-relwithdebinfo/

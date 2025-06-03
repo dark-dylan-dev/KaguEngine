@@ -1,15 +1,22 @@
-#pragma once
+module;
 
-#include "Device.hpp"
-#include "SwapChain.hpp"
-#include "Window.hpp"
+// libs
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 // std
 #include <cassert>
-#include <memory>
-#include <vector>
 
-namespace KaguEngine {
+// std
+import std;
+
+import KaguEngine.Device;
+import KaguEngine.SwapChain;
+import KaguEngine.Window;
+
+export module KaguEngine.Renderer;
+
+export namespace KaguEngine {
 
 class Renderer {
 public:
@@ -36,7 +43,7 @@ public:
     VkCommandBuffer beginFrame();
     void endFrame();
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer) const;
-    void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+    void endSwapChainRenderPass(VkCommandBuffer commandBuffer) const;
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
 

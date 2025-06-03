@@ -1,12 +1,17 @@
-#pragma once
+module;
 
-#include "Window.hpp"
+// libs
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 // std
-#include <string>
-#include <vector>
+import std.compat; // For strcmp()
 
-namespace KaguEngine {
+import KaguEngine.Window;
+
+export module KaguEngine.Device;
+
+export namespace KaguEngine {
 
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -76,7 +81,7 @@ private:
     void createCommandPool();
 
     // helper functions
-    bool isDeviceSuitable(VkPhysicalDevice device) const;
+    int rateDeviceSuitability(VkPhysicalDevice device) const;
     [[nodiscard]] std::vector<const char *> getRequiredExtensions() const;
     [[nodiscard]] bool checkValidationLayerSupport() const;
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;

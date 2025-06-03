@@ -1,7 +1,15 @@
-#include "Buffer.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
+// std
 #include <cassert>
-#include <cstring>
+
+import KaguEngine.Buffer;
+
+// std
+import std.compat; // For memcpy()
+
+import KaguEngine.Device;
 
 namespace KaguEngine {
 

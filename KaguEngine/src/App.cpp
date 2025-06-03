@@ -1,41 +1,34 @@
-#include "App.hpp"
-
-#include "Buffer.hpp"
-#include "Camera.hpp"
-#include "MovementController.hpp"
-#include "Texture.hpp"
-#include "systems/PointLightSystem.hpp"
-#include "systems/SimpleRenderSystem.hpp"
-
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 // std
-#include <chrono>
-#include <numeric>
-#include <stdexcept>
+import std;
+
+import App;
+
+import KaguEngine.Buffer;
+import KaguEngine.Camera;
+import KaguEngine.Descriptor;
+import KaguEngine.Device;
+import KaguEngine.Entity;
+import KaguEngine.FrameInfo;
+import KaguEngine.Model;
+import KaguEngine.MovementController;
+import KaguEngine.Renderer;
+import KaguEngine.System.PointLight;
+import KaguEngine.System.Render;
+import KaguEngine.SwapChain;
+import KaguEngine.Texture;
+import KaguEngine.Window;
 
 namespace KaguEngine {
-
-App::App() {
-    m_GlobalSetLayout = DescriptorSetLayout::Builder(m_Device)
-        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-        .build();
-    m_MaterialSetLayout = DescriptorSetLayout::Builder(m_Device)
-        .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-        .build();
-    m_DescriptorPool = DescriptorPool::Builder(m_Device)
-        .setMaxSets(1000) // Arbitrary value
-        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
-        .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
-        .build();
-    loadGameObjects();
-}
-
-App::~App() = default;
 
 void App::run() {
     std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -53,7 +46,7 @@ void App::run() {
             .build(globalDescriptorSets[i]);
     }
 
-    SimpleRenderSystem simpleRenderSystem{
+    RenderSystem renderSystem{
         m_Device,
         m_Renderer.getSwapChainRenderPass(),
         m_GlobalSetLayout->getDescriptorSetLayout(),    // set = 0 (UBO)
@@ -104,7 +97,7 @@ void App::run() {
             m_Renderer.beginSwapChainRenderPass(commandBuffer);
 
             // order here matters
-            simpleRenderSystem.renderGameObjects(frameInfo);
+            renderSystem.renderGameObjects(frameInfo);
             pointLightSystem.render(frameInfo);
 
             m_Renderer.endSwapChainRenderPass(commandBuffer);
@@ -117,21 +110,17 @@ void App::run() {
 
 void App::loadGameObjects() {
     std::shared_ptr<Model> loadedModel;
-    std::unique_ptr<Texture> loadedTexture;
 
     // Obamium
-    loadedTexture = Texture::createTextureFromFile(
-        m_Device,
-        *m_Renderer.getSwapChain(),
-        "assets/textures/obamium_texture.png",
-        m_MaterialSetLayout->getDescriptorSetLayout(),
+    auto obamiumTexture = Texture::createTextureFromFile(m_Device, *m_Renderer.getSwapChain(),
+        "assets/textures/obamium_texture.png", m_MaterialSetLayout->getDescriptorSetLayout(),
         m_DescriptorPool->getDescriptorPool()
     );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/obamium_model.obj");
 
     auto centralObamium = Entity::createEntity();
     centralObamium.model = loadedModel;
-    centralObamium.texture = std::move(loadedTexture);
+    centralObamium.texture = std::move(obamiumTexture);
     centralObamium.material = centralObamium.texture->getMaterial();
     centralObamium.transform.translation = {0.0f, 0.0f, 0.0f};
     centralObamium.transform.scale = {1.f, 1.f, 1.f};
@@ -139,35 +128,32 @@ void App::loadGameObjects() {
     m_SceneEntities.emplace(centralObamium.getId(), std::move(centralObamium));
 
     // Viking room
-    loadedTexture = Texture::createTextureFromFile(
-        m_Device,
-        *m_Renderer.getSwapChain(),
-        "assets/textures/viking_room.png",
-        m_MaterialSetLayout->getDescriptorSetLayout(),
+    auto vikingRoomTexture = Texture::createTextureFromFile(m_Device, *m_Renderer.getSwapChain(),
+        "assets/textures/viking_room.png", m_MaterialSetLayout->getDescriptorSetLayout(),
         m_DescriptorPool->getDescriptorPool()
     );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/viking_room.obj");
 
     auto vikingRoom = Entity::createEntity();
     vikingRoom.model = loadedModel;
-    vikingRoom.texture = std::move(loadedTexture);
+    vikingRoom.texture = std::move(vikingRoomTexture);
     vikingRoom.material = vikingRoom.texture->getMaterial();
-    vikingRoom.transform.translation = {2.f, .0f, 2.f};
+    vikingRoom.transform.translation = {2.f, 0.f, 2.f};
     vikingRoom.transform.scale = {1.f, 1.f, 1.f};
     vikingRoom.transform.rotation = {3.14159265f / 2.f, 0.f, 3.14159265f};
     m_SceneEntities.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
-    loadedTexture = Texture::createTextureFromFile(
+    // Floor
+    auto dummyTexture = Texture::makeDummyTexture(
         m_Device,
         *m_Renderer.getSwapChain(),
-        "assets/textures/dummy_texture.png",
         m_MaterialSetLayout->getDescriptorSetLayout(),
         m_DescriptorPool->getDescriptorPool()
     );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/base.obj");
     auto floor = Entity::createEntity();
     floor.model = loadedModel;
-    floor.texture = std::move(loadedTexture);
+    floor.texture = std::move(dummyTexture);
     floor.material = floor.texture->getMaterial();
     floor.transform.translation = {0.f, 0.5f, 0.f};
     floor.transform.scale = {1.f, 1.f, 1.f};

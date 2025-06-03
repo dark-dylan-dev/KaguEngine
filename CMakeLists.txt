@@ -1,7 +1,8 @@
-﻿cmake_minimum_required (VERSION 3.12)
+﻿cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "a9e1cf81-9932-4810-974b-6eccaf14e457")
+set(CMAKE_CXX_MODULE_STD 1)
 
-project ("KaguEngine" LANGUAGES CXX VERSION 1.0.0)
+project (KaguEngine VERSION 0.0.1 LANGUAGES CXX )
 
-add_subdirectory ("KaguEngine")
+add_subdirectory (KaguEngine)

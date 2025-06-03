@@ -1,15 +1,20 @@
-#include "PointLightSystem.hpp"
-
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <vulkan/vulkan.h>
+
+import KaguEngine.System.PointLight;
 
 // std
-#include <map>
-#include <ranges>
-#include <stdexcept>
-#include <vector>
+import std;
+
+import KaguEngine.Device;
+import KaguEngine.Entity;
+import KaguEngine.FrameInfo;
+import KaguEngine.Pipeline;
 
 namespace KaguEngine {
 
@@ -54,11 +59,11 @@ void PointLightSystem::createPipeline(const VkRenderPass renderPass) {
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     Pipeline::enableAlphaBlending(pipelineConfig);
+    Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
     pipelineConfig.attributeDescriptions.clear();
     pipelineConfig.bindingDescriptions.clear();
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
-    pipelineConfig.multisampleInfo.rasterizationSamples = m_Device.getSampleCount();
     m_Pipeline = std::make_unique<Pipeline>(m_Device,
         "assets/shaders/point_light.vert.spv",
         "assets/shaders/point_light.frag.spv", pipelineConfig);

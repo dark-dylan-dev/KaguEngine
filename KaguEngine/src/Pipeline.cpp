@@ -1,15 +1,16 @@
-#include "Pipeline.hpp"
-
-#include "Model.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
 // std
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
+#include <cassert>
 
-#ifndef ENGINE_DIR
-#define ENGINE_DIR "../"
-#endif
+import KaguEngine.Pipeline;
+
+// std
+import std;
+
+import KaguEngine.Device;
+import KaguEngine.Model;
 
 namespace KaguEngine {
 
@@ -25,7 +26,7 @@ Pipeline::~Pipeline() {
 }
 
 std::vector<char> Pipeline::readFile(const std::string &filepath) {
-    const std::string enginePath = /*ENGINE_DIR + */ filepath;
+    const std::string enginePath = filepath;
     std::ifstream file{enginePath, std::ios::ate | std::ios::binary};
 
     if (!file.is_open()) {
@@ -203,6 +204,10 @@ void Pipeline::enableAlphaBlending(PipelineConfigInfo &configInfo) {
     configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+}
+
+void Pipeline::enableMSAA(PipelineConfigInfo &configInfo, const VkSampleCountFlagBits &msaaLevel) {
+    configInfo.multisampleInfo.rasterizationSamples = msaaLevel;
 }
 
 } // Namespace KaguEngine

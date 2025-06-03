@@ -1,9 +1,19 @@
-#pragma once
+module;
 
-#include "Entity.hpp"
-#include "Window.hpp"
+// libs
+#include <GLFW/glfw3.h>
 
-namespace KaguEngine {
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+
+// std
+import std;
+
+import KaguEngine.Entity;
+
+export module KaguEngine.MovementController;
+
+export namespace KaguEngine {
 
 class KeyboardMovementController {
 public:

@@ -1,8 +1,18 @@
-#include "Renderer.hpp"
+// libs
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 // std
-#include <array>
-#include <stdexcept>
+#include <cassert>
+
+import KaguEngine.Renderer;
+
+// std
+import std;
+
+import KaguEngine.Device;
+import KaguEngine.SwapChain;
+import KaguEngine.Window;
 
 namespace KaguEngine {
 
@@ -129,7 +139,7 @@ void Renderer::beginSwapChainRenderPass(const VkCommandBuffer commandBuffer) con
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void Renderer::endSwapChainRenderPass(const VkCommandBuffer commandBuffer) {
+void Renderer::endSwapChainRenderPass(const VkCommandBuffer commandBuffer) const {
     assert(m_isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
     assert(commandBuffer == getCurrentCommandBuffer() &&
            "Can't end render pass on command buffer from a different frame");

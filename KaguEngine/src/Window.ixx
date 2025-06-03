@@ -1,11 +1,15 @@
-#pragma once
+module;
 
+// libs
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <string>
+// std
+import std;
 
-namespace KaguEngine {
+export module KaguEngine.Window;
+
+export namespace KaguEngine {
 
 class Window {
 public:
@@ -29,6 +33,7 @@ public:
 private:
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
     void initWindow();
+    void centerWindow(GLFWwindow *window, GLFWmonitor *monitor);
 
     int m_Width;
     int m_Height;

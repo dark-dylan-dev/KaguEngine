@@ -1,16 +1,18 @@
-#pragma once
-
-#include "Model.hpp"
-#include "Texture.hpp"
+module;
 
 // libs
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 // std
-#include <memory>
-#include <unordered_map>
+import std;
 
-namespace KaguEngine {
+import KaguEngine.Model;
+import KaguEngine.Texture;
+
+export module KaguEngine.Entity;
+
+export namespace KaguEngine {
 
 struct TransformComponent {
     glm::vec3 translation{};
@@ -40,10 +42,18 @@ public:
 
     static Entity makePointLight(float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f));
 
-    // Non copyable, movable
+    // Non copyable
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
-    Entity(Entity &&) = default;
+    Entity(Entity &&other) noexcept {
+        m_Id       = other.m_Id;
+        color      = other.color;
+        transform  = other.transform;
+        texture    = std::move(other.texture);
+        model      = std::move(other.model);
+        material   = other.material;
+        pointLight = std::move(other.pointLight);
+    }
     Entity &operator=(Entity &&) = default;
 
     [[nodiscard]] id_t getId() const { return m_Id; }

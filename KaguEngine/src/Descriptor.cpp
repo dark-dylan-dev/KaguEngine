@@ -1,9 +1,14 @@
-#include "Descriptor.hpp"
+#include <vulkan/vulkan.h>
 
 // std
 #include <cassert>
-#include <ranges>
-#include <stdexcept>
+
+import KaguEngine.Descriptor;
+
+// std
+import std;
+
+import KaguEngine.Device;
 
 namespace KaguEngine {
 

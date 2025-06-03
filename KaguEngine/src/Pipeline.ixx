@@ -1,12 +1,18 @@
-#pragma once
+module;
 
-#include "Device.hpp"
+// libs
+#include <vulkan/vulkan.h>
 
 // std
-#include <string>
-#include <vector>
+#include <cassert>
+import std;
 
-namespace KaguEngine {
+import KaguEngine.Device;
+import KaguEngine.Model;
+
+export module KaguEngine.Pipeline;
+
+export namespace KaguEngine {
 
 struct PipelineConfigInfo {
     PipelineConfigInfo() = default;
@@ -42,6 +48,7 @@ public:
 
     static void defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
     static void enableAlphaBlending(PipelineConfigInfo &configInfo);
+    static void enableMSAA(PipelineConfigInfo &configInfo, const VkSampleCountFlagBits &msaaLevel);
 
 private:
     static std::vector<char> readFile(const std::string &filepath);

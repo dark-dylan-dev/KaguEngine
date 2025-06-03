@@ -1,8 +1,11 @@
-#pragma once
+module;
 
-#include <functional>
+// std
+import std;
 
-namespace KaguEngine {
+export module KaguEngine.Utils;
+
+export namespace KaguEngine {
 
 // from: https://stackoverflow.com/a/57595105
 template<typename T, typename... Rest>

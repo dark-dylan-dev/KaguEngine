@@ -1,28 +1,22 @@
-#include "Model.hpp"
-
-#include "Utils.hpp"
-
 // libs
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
+#include <glm/glm.hpp>
+
+#include <tiny_obj_loader.h>
+
+#include <vulkan/vulkan.h>
+
+import KaguEngine.Model;
 
 // std
-#include <unordered_map>
+import std;
 
-#ifndef ENGINE_DIR
-#define ENGINE_DIR "../"
-#endif
-
-template<>
-struct std::hash<KaguEngine::Model::Vertex> {
-    size_t operator()(KaguEngine::Model::Vertex const &vertex) const noexcept {
-        size_t seed = 0;
-        KaguEngine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
-        return seed;
-    }
-};
+import KaguEngine.Buffer;
+import KaguEngine.Device;
+import KaguEngine.Utils;
 
 namespace KaguEngine {
 

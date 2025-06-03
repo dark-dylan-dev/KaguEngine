@@ -1,13 +1,14 @@
-﻿cmake_minimum_required(VERSION 3.7)
-
-# C++ 20 standard required
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-file(GLOB_RECURSE SOURCES src/*.cpp)
+﻿file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
+file(GLOB_RECURSE CPP_MODULES src/*.ixx)
 
 # Adding the executable
-add_executable(KaguEngine ${SOURCES})
+add_executable(KaguEngine)
+
+target_sources(KaguEngine PRIVATE ${CPP_SOURCES})
+target_sources(KaguEngine PRIVATE
+        FILE_SET all_modules TYPE CXX_MODULES
+        FILES ${CPP_MODULES}
+)
 
 # Adding external libraries
 add_subdirectory(extern/glfw)
@@ -26,3 +27,6 @@ endif()
 
 target_include_directories(KaguEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan)
+
+# Enforces C++23 on the target
+target_compile_features(KaguEngine PRIVATE cxx_std_23)

@@ -1,12 +1,15 @@
-#pragma once
+module;
 
-#include "Camera.hpp"
-#include "Entity.hpp"
-
-// lib
+// libs
+#include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
-namespace KaguEngine {
+import KaguEngine.Camera;
+import KaguEngine.Entity;
+
+export module KaguEngine.FrameInfo;
+
+export namespace KaguEngine {
 
 constexpr int MAX_LIGHTS = 10;
 

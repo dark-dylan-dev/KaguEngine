@@ -1,8 +1,15 @@
-#include "MovementController.hpp"
+// libs
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+
+import KaguEngine.MovementController;
 
 // std
-#include <cmath>
-#include <limits>
+import std;
+
+import KaguEngine.Entity;
 
 namespace KaguEngine {
 

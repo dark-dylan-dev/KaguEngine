@@ -1,11 +1,12 @@
-#include "SwapChain.hpp"
+// libs
+#include <vulkan/vulkan.h>
+
+import KaguEngine.SwapChain;
 
 // std
-#include <array>
-#include <cstring>
-#include <iostream>
-#include <limits>
-#include <stdexcept>
+import std;
+
+import KaguEngine.Device;
 
 namespace KaguEngine {
 
@@ -15,7 +16,7 @@ SwapChain::SwapChain(Device &deviceRef, const VkExtent2D windowExtent) :
 }
 
 SwapChain::SwapChain(Device &deviceRef, const VkExtent2D windowExtent, const std::shared_ptr<SwapChain> previous) :
-    deviceRef{deviceRef}, m_WindowExtent{windowExtent}, m_OldSwapChain{previous} {
+    m_OldSwapChain{previous}, m_WindowExtent{windowExtent}, deviceRef{deviceRef} {
     init();
     m_OldSwapChain = nullptr;
 }
@@ -358,7 +359,7 @@ void SwapChain::createDepthResources() {
 }
 
 void SwapChain::createColorResources() {
-    VkFormat colorFormat = m_SwapChainImageFormat;
+    const VkFormat colorFormat = m_SwapChainImageFormat;
 
     m_ColorImages.resize(imageCount());
     m_ColorImageMemories.resize(imageCount());
@@ -424,7 +425,7 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     for (const auto &availablePresentMode: availablePresentModes) {
         // Lower latency, but frames might be dropped
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            std::cout << "Present mode : Mailbox" << std::endl;
+            //std::cout << "Present mode : Mailbox" << '\n';
             return availablePresentMode;
         }
     }
@@ -432,13 +433,13 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     for (const auto &availablePresentMode : availablePresentModes) {
         // V-Sync off
         if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-          std::cout << "Present mode: Immediate" << std::endl;
+          //std::cout << "Present mode: Immediate" << '\n';
           return availablePresentMode;
         }
     }
 
     // No frames dropped, higher latency
-    std::cout << "Present mode: V-Sync" << std::endl;
+    //std::cout << "Present mode: V-Sync" << '\n';
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
