@@ -1,6 +1,11 @@
 ﻿file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
 file(GLOB_RECURSE CPP_MODULES src/*.ixx)
 
+# Enable MSVC module support
+if (MSVC)
+    add_compile_options(/experimental:module /MD)
+endif()
+
 # Adding the executable
 add_executable(KaguEngine)
 
