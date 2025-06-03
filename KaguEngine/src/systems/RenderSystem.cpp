@@ -1,5 +1,3 @@
-module;
-
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -7,11 +5,10 @@ module;
 
 #include <vulkan/vulkan.h>
 
+import KaguEngine.System.Render;
+
 // std
 import std;
-import std.compat;
-
-export module KaguEngine.System.Render;
 
 import KaguEngine.Camera;
 import KaguEngine.Device;
@@ -19,35 +16,7 @@ import KaguEngine.Entity;
 import KaguEngine.FrameInfo;
 import KaguEngine.Pipeline;
 
-export namespace KaguEngine {
-
-class RenderSystem {
-public:
-    RenderSystem(Device &device, VkRenderPass renderPass,
-                   VkDescriptorSetLayout globalSetLayout,
-                   VkDescriptorSetLayout materialSetLayout);
-    ~RenderSystem();
-
-    RenderSystem(const RenderSystem &) = delete;
-    RenderSystem &operator=(const RenderSystem &) = delete;
-
-    void renderGameObjects(const FrameInfo &frameInfo) const;
-
-private:
-    void createPipelineLayout(VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout materialSetLayout);
-    void createPipeline(VkRenderPass renderPass);
-
-    Device &m_Device;
-
-    std::unique_ptr<Pipeline> m_Pipeline;
-    VkPipelineLayout m_pipelineLayout;
-};
-
-} // Namespace KaguEngine
-
-// .cpp part
-
-export namespace KaguEngine {
+namespace KaguEngine {
 
 struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f};

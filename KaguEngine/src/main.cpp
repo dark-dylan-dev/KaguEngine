@@ -1,5 +1,3 @@
-import std;
-
 import App;
 
 int main() {
