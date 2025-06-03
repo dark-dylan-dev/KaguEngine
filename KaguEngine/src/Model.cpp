@@ -4,9 +4,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 #include <glm/glm.hpp>
-
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
-
 #include <vulkan/vulkan.h>
 
 import KaguEngine.Model;

@@ -1,11 +1,10 @@
 module;
 
 // libs
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 // std
-import std.compat; // For strcmp()
+import std;
 
 import KaguEngine.Window;
 

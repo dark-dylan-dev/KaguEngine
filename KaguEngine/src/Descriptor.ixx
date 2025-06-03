@@ -1,9 +1,7 @@
 module;
 
+// libs
 #include <vulkan/vulkan.h>
-
-// std
-#include <cassert>
 
 // std
 import std;

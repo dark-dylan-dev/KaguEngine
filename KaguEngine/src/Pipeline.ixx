@@ -4,11 +4,9 @@ module;
 #include <vulkan/vulkan.h>
 
 // std
-#include <cassert>
 import std;
 
 import KaguEngine.Device;
-import KaguEngine.Model;
 
 export module KaguEngine.Pipeline;
 
