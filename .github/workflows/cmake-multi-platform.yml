@@ -15,24 +15,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
+        c_compiler: [clang]
+        cpp_compiler: [clang++]
+        clang_version: [20, 21]
 
     steps:
       - uses: actions/checkout@v4
@@ -51,27 +36,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh ${{ matrix.clang_version }}
 
-      - name: Install GCC 15 on Ubuntu
-        if: matrix.c_compiler == 'gcc' && runner.os == 'Linux'
-        run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-          sudo apt-get update
-          sudo apt-get install -y gcc-15 g++-15
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
-
-      - name: Install Clang 19 and libc++ on Ubuntu
-        if: matrix.c_compiler == 'clang' && runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang-19 libc++-19-dev libc++abi-19-dev
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 100
-
-      - name: Set up MSVC Developer Command Prompt
-        if: matrix.os == 'windows-latest' && matrix.c_compiler == 'cl'
-        uses: ilammy/msvc-dev-cmd@v1
+      - name: Install Clang on Windows
+        if: runner.os == 'Windows'
+        run: choco install llvm --pre -y
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
@@ -86,12 +57,10 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -G ${{ (matrix.os == 'windows-latest' && matrix.c_compiler == 'cl') && 'Ninja Multi-Config' || 'Ninja' }}
-          -DCMAKE_CXX_STANDARD=23
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} 
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -S ${{ github.workspace }}
+          -G Ninja
 
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+        run: cd ${{ steps.strings.outputs.build-output-dir }} && ninja -j 9
