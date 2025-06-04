@@ -1,3 +1,5 @@
+module;
+
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -8,10 +10,10 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+module App;
+
 // std
 import std;
-
-import App;
 
 import KaguEngine.Buffer;
 import KaguEngine.Camera;

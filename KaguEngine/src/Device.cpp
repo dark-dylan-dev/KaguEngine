@@ -1,8 +1,10 @@
+module;
+
 // libs
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-import KaguEngine.Device;
+module KaguEngine.Device;
 
 // std
 import std.compat; // For strcmp()

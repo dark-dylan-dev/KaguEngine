@@ -1,9 +1,11 @@
+module;
+
 #include <vulkan/vulkan.h>
 
 // std
 #include <cassert>
 
-import KaguEngine.Descriptor;
+module KaguEngine.Descriptor;
 
 // std
 import std;

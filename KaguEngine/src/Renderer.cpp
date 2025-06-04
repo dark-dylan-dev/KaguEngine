@@ -1,3 +1,5 @@
+module;
+
 // libs
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -5,7 +7,7 @@
 // std
 #include <cassert>
 
-import KaguEngine.Renderer;
+module KaguEngine.Renderer;
 
 // std
 import std;

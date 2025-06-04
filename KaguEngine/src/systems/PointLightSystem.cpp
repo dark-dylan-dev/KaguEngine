@@ -1,3 +1,5 @@
+module;
+
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -6,7 +8,7 @@
 
 #include <vulkan/vulkan.h>
 
-import KaguEngine.System.PointLight;
+module KaguEngine.System.PointLight;
 
 // std
 import std;
