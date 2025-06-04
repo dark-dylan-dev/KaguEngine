@@ -1,5 +1,9 @@
 ﻿set(CMAKE_CXX_EXTENSIONS ON)
 
+if (MSVC)
+    add_compile_options(/std:c++23 /experimental:module /Zc:preprocessor /EHsc)
+endif()
+
 file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
 file(GLOB_RECURSE CPP_MODULES src/*.ixx)
 
