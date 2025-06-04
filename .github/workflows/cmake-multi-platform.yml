@@ -72,7 +72,6 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-# -DCMAKE_CXX_FLAGS="/experimental:module /std:c++latest"
       - name: Configure CMake with MSVC
         if: runner.os == 'Windows'
         run: >
