@@ -13,7 +13,7 @@ module;
 module App;
 
 // std
-export import std;
+import std;
 
 import KaguEngine.Buffer;
 import KaguEngine.Camera;
