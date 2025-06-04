@@ -2,7 +2,7 @@ name: CMake on Windows/Linux
 
 on:
   push:
-    branches: [ "master", "workflowModules" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
