@@ -1,3 +1,5 @@
+module;
+
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -8,7 +10,7 @@
 #include <tiny_obj_loader.h>
 #include <vulkan/vulkan.h>
 
-import KaguEngine.Model;
+module KaguEngine.Model;
 
 // std
 import std;

@@ -1,5 +1,7 @@
 import App;
 
+import std;
+
 int main() {
     try {
         KaguEngine::App Engine{};

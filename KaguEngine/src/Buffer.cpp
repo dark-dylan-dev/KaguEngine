@@ -1,10 +1,12 @@
+module;
+
 // libs
 #include <vulkan/vulkan.h>
 
 // std
 #include <cassert>
 
-import KaguEngine.Buffer;
+module KaguEngine.Buffer;
 
 // std
 import std.compat; // For memcpy()

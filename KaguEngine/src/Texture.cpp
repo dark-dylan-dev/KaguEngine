@@ -1,10 +1,12 @@
+module;
+
 // libs
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <vulkan/vulkan.h>
 
-import KaguEngine.Texture;
+module KaguEngine.Texture;
 
 // std
 import std;

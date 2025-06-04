@@ -1,10 +1,12 @@
+module;
+
 // libs
 #include <vulkan/vulkan.h>
 
 // std
 #include <cassert>
 
-import KaguEngine.Pipeline;
+module KaguEngine.Pipeline;
 
 // std
 import std;

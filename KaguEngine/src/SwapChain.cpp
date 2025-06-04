@@ -1,7 +1,9 @@
+module;
+
 // libs
 #include <vulkan/vulkan.h>
 
-import KaguEngine.SwapChain;
+module KaguEngine.SwapChain;
 
 // std
 import std;
