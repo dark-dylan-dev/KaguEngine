@@ -45,7 +45,6 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt full-upgrade -y
           sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libc++-dev libc++abi-dev
 
       - name: Prepare Vulkan SDK
@@ -65,7 +64,7 @@ jobs:
           -DCMAKE_CXX_STANDARD=23
           -DCMAKE_C_COMPILER=clang
           -DCMAKE_CXX_COMPILER=clang++
-          -DCMAKE_CXX_FLAGS="-stdlib=libc++ -std=c++23"
+          -DCMAKE_CXX_FLAGS="-stdlib=libc++"
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -G Ninja
 

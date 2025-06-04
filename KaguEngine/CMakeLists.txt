@@ -1,6 +1,4 @@
-﻿set(CMAKE_CXX_EXTENSIONS ON)
-
-file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
+﻿file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
 file(GLOB_RECURSE CPP_MODULES src/*.ixx)
 
 # Adding the executable
