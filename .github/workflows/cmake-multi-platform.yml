@@ -40,10 +40,6 @@ jobs:
           chmod +x ./llvm.sh
           sudo ./llvm.sh ${{ matrix.clang_version }}
 
-      - name: Install Clang on Windows
-        if: runner.os == 'Windows'
-        run: choco install llvm --pre -y
-
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
         with:
@@ -59,7 +55,8 @@ jobs:
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_CXX_STANDARD=23
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} 
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_CXX_FLAGS=-stdlib=libc++
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -G Ninja
 
