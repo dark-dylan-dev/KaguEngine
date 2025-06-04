@@ -1,7 +1,7 @@
 ﻿set(CMAKE_CXX_EXTENSIONS ON)
 
 if (MSVC)
-    add_compile_options(/experimental:module /std:c++latest /Zc:preprocessor /EHsc)
+    add_compile_options(/experimental:module /std:c++latest)
 endif()
 
 file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
