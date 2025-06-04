@@ -1,10 +1,7 @@
-﻿file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
-file(GLOB_RECURSE CPP_MODULES src/*.ixx)
+﻿set(CMAKE_CXX_EXTENSIONS ON)
 
-# Enable MSVC module support
-if (MSVC)
-    add_compile_options(/experimental:module /MD)
-endif()
+file(GLOB_RECURSE CPP_SOURCES src/*.cpp)
+file(GLOB_RECURSE CPP_MODULES src/*.ixx)
 
 # Adding the executable
 add_executable(KaguEngine)
