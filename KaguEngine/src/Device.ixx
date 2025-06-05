@@ -49,6 +49,7 @@ public:
     [[nodiscard]] VkSurfaceKHR surface() const { return m_Surface; }
     [[nodiscard]] VkQueue graphicsQueue() const { return m_GraphicsQueue; }
     [[nodiscard]] VkQueue presentQueue() const { return m_PresentQueue; }
+    [[nodiscard]] VkInstance instance() const { return m_Instance; }
 
     [[nodiscard]] SwapChainSupportDetails getSwapChainSupport() const { return querySwapChainSupport(m_PhysicalDevice); }
     [[nodiscard]] uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;

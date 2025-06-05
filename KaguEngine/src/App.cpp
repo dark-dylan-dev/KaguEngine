@@ -21,6 +21,7 @@ import KaguEngine.Descriptor;
 import KaguEngine.Device;
 import KaguEngine.Entity;
 import KaguEngine.FrameInfo;
+import KaguEngine.ImGuiContext;
 import KaguEngine.Model;
 import KaguEngine.MovementController;
 import KaguEngine.Renderer;
@@ -59,6 +60,7 @@ void App::run() {
         m_Renderer.getSwapChainRenderPass(),
         m_GlobalSetLayout->getDescriptorSetLayout()
     };
+    ImGuiContext imGuiContext(m_Window, *m_Renderer.getSwapChain(), m_Device, m_DescriptorPool);
     Camera camera{};
 
     auto viewerObject = Entity::createEntity();
@@ -101,6 +103,9 @@ void App::run() {
             // order here matters
             renderSystem.renderGameObjects(frameInfo);
             pointLightSystem.render(frameInfo);
+
+            // ImGui
+            imGuiContext.render(commandBuffer);
 
             m_Renderer.endSwapChainRenderPass(commandBuffer);
             m_Renderer.endFrame();
