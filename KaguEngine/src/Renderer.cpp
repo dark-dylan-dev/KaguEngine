@@ -26,6 +26,7 @@ Renderer::Renderer(Window &window, Device &device) : windowRef{window}, deviceRe
 Renderer::~Renderer() { freeCommandBuffers(); }
 
 void Renderer::recreateSwapChain() {
+    m_isSwapChainRecreated = true;
     auto extent = windowRef.getExtent();
     while (extent.width == 0 || extent.height == 0) {
         extent = windowRef.getExtent();

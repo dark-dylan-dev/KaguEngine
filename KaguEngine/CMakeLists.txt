@@ -17,7 +17,7 @@ target_link_libraries(KaguEngine PRIVATE glfw)
 target_include_directories(KaguEngine PRIVATE extern/glm)
 target_include_directories(KaguEngine PRIVATE extern/stb)
 target_include_directories(KaguEngine PRIVATE extern/tinyobjloader)
-target_include_directories(KaguEngine PRIVATE extern/imgui)
+target_include_directories(KaguEngine PRIVATE extern/ImGuiDocking)
 
 # Adding Vulkan
 find_package(Vulkan REQUIRED)

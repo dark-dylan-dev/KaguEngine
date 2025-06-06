@@ -46,6 +46,9 @@ public:
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
 
+    [[nodiscard]] bool isSwapChainRecreated() const { return m_isSwapChainRecreated; }
+    void setSwapChainRecreated() { m_isSwapChainRecreated = false; }
+
 private:
     void createCommandBuffers();
     void freeCommandBuffers();
@@ -59,6 +62,7 @@ private:
     uint32_t m_currentImageIndex;
     int m_currentFrameIndex{0};
     bool m_isFrameStarted{false};
+    bool m_isSwapChainRecreated{false};
 };
 
 } // Namespace KaguEngine

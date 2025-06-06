@@ -10,7 +10,3 @@
 [submodule "KaguEngine/extern/glm"]
 	path = KaguEngine/extern/glm
 	url = https://github.com/g-truc/glm
-[submodule "KaguEngine/extern/imgui"]
-	path = KaguEngine/extern/imgui
-	url = https://github.com/ocornut/imgui
-	branch = docking
