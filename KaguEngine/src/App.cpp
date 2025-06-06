@@ -99,6 +99,10 @@ void App::run() {
 
             // render
             m_Renderer.beginSwapChainRenderPass(commandBuffer);
+            if (m_Renderer.isSwapChainRecreated()) {
+                imGuiContext.recreateSwapChain();
+                m_Renderer.setSwapChainRecreated();
+            }
 
             // order here matters
             renderSystem.renderGameObjects(frameInfo);
@@ -108,6 +112,10 @@ void App::run() {
             imGuiContext.render(commandBuffer);
 
             m_Renderer.endSwapChainRenderPass(commandBuffer);
+            if (m_Renderer.isSwapChainRecreated()) {
+                imGuiContext.recreateSwapChain();
+                m_Renderer.setSwapChainRecreated();
+            }
             m_Renderer.endFrame();
         }
     }

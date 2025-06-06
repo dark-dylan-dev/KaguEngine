@@ -46,7 +46,7 @@ public:
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
 
-    bool isSwapChainRecreated() const { return m_isSwapChainRecreated; }
+    [[nodiscard]] bool isSwapChainRecreated() const { return m_isSwapChainRecreated; }
     void setSwapChainRecreated() { m_isSwapChainRecreated = false; }
 
 private:

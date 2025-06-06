@@ -11,27 +11,37 @@ import KaguEngine.Window;
 namespace KaguEngine {
 
 ImGuiContext::ImGuiContext(Window &window, SwapChain &swapChain, Device &device, std::unique_ptr<DescriptorPool> &pool) :
-    poolRef{pool}, deviceRef{device}, swapChainRef{swapChain}, windowRef{window}
-{
+    poolRef{pool}, deviceRef{device}, swapChainRef{swapChain}, windowRef{window} {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enables Keyboard Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enables Gamepad Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-
+    setupConfigFlags();
+    setupStyle();
     setupContext();
 }
 
 ImGuiContext::~ImGuiContext() {
-    ImGui_ImplVulkan_DestroyFontsTexture();
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
+
+void ImGuiContext::setupConfigFlags() {
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+}
+
+void ImGuiContext::setupStyle() {
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+    ImGui::StyleColorsDark();
 }
 
 void ImGuiContext::setupContext() const {
@@ -62,15 +72,37 @@ void ImGuiContext::recreateSwapChain() const {
 }
 
 void ImGuiContext::render(VkCommandBuffer commandBuffer) {
+    beginRender();
+    onRender();
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+    endRender();
+}
+
+void ImGuiContext::beginRender() {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+}
 
-    // Draws stuff here
+void ImGuiContext::onRender() {
+    ImGuiIO& io = ImGui::GetIO();
+    // Demo window
     ImGui::ShowDemoWindow();
+    // Other window
+    {
+        ImGui::Begin("Other window");
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::End();
+    }
+}
 
-    ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+void ImGuiContext::endRender() {
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
 }
 
 } // Namespace KaguEngine

@@ -25,6 +25,11 @@ public:
 
 private:
     void setupContext() const;
+    void setupConfigFlags();
+    void setupStyle();
+    void beginRender();
+    void onRender();
+    void endRender();
 
     std::unique_ptr<DescriptorPool> &poolRef;
     Device &deviceRef;

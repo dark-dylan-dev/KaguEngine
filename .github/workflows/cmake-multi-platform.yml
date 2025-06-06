@@ -41,6 +41,12 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+      - name: Checkout to docking branch (ImGui)
+        run: |
+          cd KaguEngine/extern/imgui
+          git checkout docking
+          cd ../../..
+
       - name: Install dependencies (Ubuntu)
         if: runner.os == 'Linux'
         run: |
