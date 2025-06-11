@@ -10,3 +10,6 @@
 [submodule "KaguEngine/extern/glm"]
 	path = KaguEngine/extern/glm
 	url = https://github.com/g-truc/glm
+[submodule "KaguEngine/extern/ImGuiFork"]
+	path = KaguEngine/extern/ImGuiFork
+	url = https://github.com/dark-dylan-dev/ImGuiFork.git

@@ -25,6 +25,7 @@ public:
         int lookRight = GLFW_KEY_RIGHT;
         int lookUp = GLFW_KEY_UP;
         int lookDown = GLFW_KEY_DOWN;
+        int fullScreen = GLFW_KEY_F11;
     };
 
     void moveInPlaneXZ(GLFWwindow *window, float dt, Entity &entity) const;

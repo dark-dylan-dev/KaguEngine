@@ -13,6 +13,12 @@ import std;
 
 import KaguEngine.Entity;
 
+namespace {
+    int width, height, xpos, ypos;
+    bool isFullscreen = false;
+    bool isHolding = false;
+}
+
 namespace KaguEngine {
 
 void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, const float dt, Entity& entity) const {
@@ -25,6 +31,24 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, const float d
         rotate.x += 1.f;
     if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS)
         rotate.x -= 1.f;
+
+    // Fullscreen check
+    if (glfwGetKey(window, keys.fullScreen) == GLFW_PRESS && !isHolding) {
+        if (!isFullscreen) {
+            glfwGetWindowSize(window, &width, &height);
+            glfwGetWindowPos(window, &xpos, &ypos);
+            const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
+        }
+        else {
+            glfwSetWindowMonitor(window, nullptr, xpos, ypos, width, height, 0);
+        }
+        isFullscreen = !isFullscreen;
+        isHolding = true;
+    }
+    else if (glfwGetKey(window, keys.fullScreen) == GLFW_RELEASE && isHolding) {
+        isHolding = false;
+    }
 
     if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
         entity.transform.rotation += lookSpeed * dt * glm::normalize(rotate);
