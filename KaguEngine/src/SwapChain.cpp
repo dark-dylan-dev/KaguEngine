@@ -34,40 +34,60 @@ void SwapChain::init() {
 }
 
 SwapChain::~SwapChain() {
+    // Destroy swapchain image views
     for (const auto imageView: m_SwapChainImageViews) {
         vkDestroyImageView(deviceRef.device(), imageView, nullptr);
     }
     m_SwapChainImageViews.clear();
 
+    // Destroy multisample color image views, images, and memories
+    for (size_t i = 0; i < m_MultisampleColorImages.size(); i++) {
+        vkDestroyImageView(deviceRef.device(), m_MultisampleColorImageViews[i], nullptr);
+        vkDestroyImage(deviceRef.device(), m_MultisampleColorImages[i], nullptr);
+        vkFreeMemory(deviceRef.device(), m_MultisampleColorImageMemories[i], nullptr);
+    }
+    m_MultisampleColorImageViews.clear();
+    m_MultisampleColorImages.clear();
+    m_MultisampleColorImageMemories.clear();
+
+    // Destroy depth image views, images, and memories
+    for (size_t i = 0; i < m_DepthImages.size(); i++) {
+        vkDestroyImageView(deviceRef.device(), m_DepthImageViews[i], nullptr);
+        vkDestroyImage(deviceRef.device(), m_DepthImages[i], nullptr);
+        vkFreeMemory(deviceRef.device(), m_DepthImageMemories[i], nullptr);
+    }
+    m_DepthImageViews.clear();
+    m_DepthImages.clear();
+    m_DepthImageMemories.clear();
+
+    // Destroy framebuffers
+    for (const auto framebuffer: m_SwapChainFramebuffers) {
+        vkDestroyFramebuffer(deviceRef.device(), framebuffer, nullptr);
+    }
+    m_SwapChainFramebuffers.clear();
+
+    // Destroy render pass
+    if (m_RenderPass != nullptr) {
+        vkDestroyRenderPass(deviceRef.device(), m_RenderPass, nullptr);
+        m_RenderPass = nullptr;
+    }
+
+    // Destroy the swapchain
     if (m_SwapChain != nullptr) {
         vkDestroySwapchainKHR(deviceRef.device(), m_SwapChain, nullptr);
         m_SwapChain = nullptr;
     }
 
-    for (int i = 0; i < m_ColorImages.size(); i++) {
-        vkDestroyImageView(deviceRef.device(), m_ColorImageViews[i], nullptr);
-        vkDestroyImage(deviceRef.device(), m_ColorImages[i], nullptr);
-        vkFreeMemory(deviceRef.device(), m_ColorImageMemories[i], nullptr);
-    }
-
-    for (int i = 0; i < m_DepthImages.size(); i++) {
-        vkDestroyImageView(deviceRef.device(), m_DepthImageViews[i], nullptr);
-        vkDestroyImage(deviceRef.device(), m_DepthImages[i], nullptr);
-        vkFreeMemory(deviceRef.device(), m_DepthImageMemories[i], nullptr);
-    }
-
-    for (const auto framebuffer: m_SwapChainFramebuffers) {
-        vkDestroyFramebuffer(deviceRef.device(), framebuffer, nullptr);
-    }
-
-    vkDestroyRenderPass(deviceRef.device(), m_RenderPass, nullptr);
-
-    // cleanup synchronization objects
+    // Destroy synchronization objects
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(deviceRef.device(), m_RenderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(deviceRef.device(), m_ImageAvailableSemaphores[i], nullptr);
         vkDestroyFence(deviceRef.device(), m_InFlightFences[i], nullptr);
     }
+    m_RenderFinishedSemaphores.clear();
+    m_ImageAvailableSemaphores.clear();
+    m_InFlightFences.clear();
+    m_ImagesInFlight.clear();
 }
 
 VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) const {
@@ -214,6 +234,16 @@ void SwapChain::createImageViews() {
 }
 
 void SwapChain::createRenderPass() {
+    VkAttachmentDescription colorAttachment = {};
+    colorAttachment.format = getSwapChainImageFormat();
+    colorAttachment.samples = deviceRef.getSampleCount();
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = findDepthFormat();
     depthAttachment.samples = deviceRef.getSampleCount();
@@ -224,18 +254,8 @@ void SwapChain::createRenderPass() {
     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = getSwapChainImageFormat();
-    colorAttachment.samples = deviceRef.getSampleCount();
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentDescription colorAttachmentResolve{};
-    colorAttachmentResolve.format = m_SwapChainImageFormat;
+    VkAttachmentDescription colorAttachmentResolve = {};
+    colorAttachmentResolve.format = getSwapChainImageFormat();
     colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -248,11 +268,11 @@ void SwapChain::createRenderPass() {
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference depthAttachmentRef{};
+    VkAttachmentReference depthAttachmentRef = {};
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference colorAttachmentResolveRef{};
+    VkAttachmentReference colorAttachmentResolveRef = {};
     colorAttachmentResolveRef.attachment = 2;
     colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
@@ -260,18 +280,16 @@ void SwapChain::createRenderPass() {
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pResolveAttachments = &colorAttachmentResolveRef;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
+    subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
     VkSubpassDependency dependency = {};
-    dependency.dstSubpass = 0;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    dependency.dstStageMask =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.srcAccessMask = 0;
-    dependency.srcStageMask =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
     std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
     VkRenderPassCreateInfo renderPassInfo = {};
@@ -292,23 +310,21 @@ void SwapChain::createFramebuffers() {
     m_SwapChainFramebuffers.resize(imageCount());
     for (size_t i = 0; i < imageCount(); i++) {
         std::array<VkImageView, 3> attachments = {
-            m_ColorImageViews[i],
+            m_MultisampleColorImageViews[i],
             m_DepthImageViews[i],
             m_SwapChainImageViews[i]
         };
 
-        const auto [width, height] = getSwapChainExtent();
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = m_RenderPass;
         framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = width;
-        framebufferInfo.height = height;
+        framebufferInfo.width = m_SwapChainExtent.width;
+        framebufferInfo.height = m_SwapChainExtent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(deviceRef.device(), &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) !=
-            VK_SUCCESS) {
+        if (vkCreateFramebuffer(deviceRef.device(), &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create framebuffer!");
         }
     }
@@ -363,16 +379,16 @@ void SwapChain::createDepthResources() {
 void SwapChain::createColorResources() {
     const VkFormat colorFormat = m_SwapChainImageFormat;
 
-    m_ColorImages.resize(imageCount());
-    m_ColorImageMemories.resize(imageCount());
-    m_ColorImageViews.resize(imageCount());
+    m_MultisampleColorImages.resize(imageCount());
+    m_MultisampleColorImageMemories.resize(imageCount());
+    m_MultisampleColorImageViews.resize(imageCount());
 
     for (size_t i = 0; i < imageCount(); i++) {
         VkImageCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         createInfo.imageType = VK_IMAGE_TYPE_2D;
         createInfo.extent.width = m_SwapChainExtent.width;
-        createInfo.extent.height = m_SwapChainExtent.width;
+        createInfo.extent.height = m_SwapChainExtent.height;
         createInfo.extent.depth = 1;
         createInfo.mipLevels = 1;
         createInfo.arrayLayers = 1;
@@ -383,8 +399,10 @@ void SwapChain::createColorResources() {
         createInfo.samples = deviceRef.getSampleCount();
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.flags = 0;
-        deviceRef.createImageWithInfo(createInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_ColorImages[i], m_ColorImageMemories[i]);
-        m_ColorImageViews[i] = createImageView(m_ColorImages[i], colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+        deviceRef.createImageWithInfo(createInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        m_MultisampleColorImages[i], m_MultisampleColorImageMemories[i]);
+        m_MultisampleColorImageViews[i] = createImageView(
+        m_MultisampleColorImages[i], colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
 }
 

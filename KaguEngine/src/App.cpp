@@ -97,25 +97,21 @@ void App::run() {
             if(uboBuffers[frameIndex]->flush() != VK_SUCCESS)
                 throw std::runtime_error("Couldn't flush the ubo for one frame!");
 
-            // render
-            m_Renderer.beginSwapChainRenderPass(commandBuffer);
-            if (m_Renderer.isSwapChainRecreated()) {
-                imGuiContext.recreateSwapChain();
-                m_Renderer.setSwapChainRecreated();
-            }
-
-            // order here matters
+            // Offscreen rendering
+            m_Renderer.beginOffscreenRenderPass(commandBuffer);
             renderSystem.renderGameObjects(frameInfo);
             pointLightSystem.render(frameInfo);
+            m_Renderer.endOffscreenRenderPass(commandBuffer);
 
-            // ImGui
-            imGuiContext.render(commandBuffer);
+            // ImGui rendering
+            m_Renderer.transitionOffscreenImageForImGui();
+            imGuiContext.render(m_Renderer);
 
+            // Present the image
+            m_Renderer.beginSwapChainRenderPass(commandBuffer);
+            imGuiContext.onPresent(commandBuffer);
             m_Renderer.endSwapChainRenderPass(commandBuffer);
-            if (m_Renderer.isSwapChainRecreated()) {
-                imGuiContext.recreateSwapChain();
-                m_Renderer.setSwapChainRecreated();
-            }
+
             m_Renderer.endFrame();
         }
     }

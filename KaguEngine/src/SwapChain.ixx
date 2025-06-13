@@ -75,9 +75,9 @@ private:
     std::vector<VkImageView> m_DepthImageViews;
     std::vector<VkImage> m_SwapChainImages;
     std::vector<VkImageView> m_SwapChainImageViews;
-    std::vector<VkImage> m_ColorImages;
-    std::vector<VkDeviceMemory> m_ColorImageMemories;
-    std::vector<VkImageView> m_ColorImageViews;
+    std::vector<VkImage> m_MultisampleColorImages;
+    std::vector<VkDeviceMemory> m_MultisampleColorImageMemories;
+    std::vector<VkImageView> m_MultisampleColorImageViews;
 
     Device &deviceRef;
     VkExtent2D m_WindowExtent;
