@@ -69,7 +69,8 @@ void RenderSystem::createPipeline(const VkRenderPass renderPass) {
 
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
-    //Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
+    Pipeline::enableAlphaBlending(pipelineConfig);
+    Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
     m_Pipeline = std::make_unique<Pipeline>(

@@ -60,7 +60,7 @@ void ImGuiContext::setupContext() const {
     init_info.Allocator = nullptr;
     init_info.Subpass = 0;
     init_info.MinImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;//deviceRef.getSampleCount();
+    init_info.MSAASamples = deviceRef.getSampleCount();
     init_info.ImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
     //init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info);

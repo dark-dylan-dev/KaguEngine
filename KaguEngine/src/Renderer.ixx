@@ -68,10 +68,6 @@ private:
     int m_currentFrameIndex{0};
     bool m_isFrameStarted{false};
 
-    // Off screen rendering
-    VkImage m_offscreenImage = VK_NULL_HANDLE;
-    VkDeviceMemory m_offscreenImageMemory = VK_NULL_HANDLE;
-    VkImageView m_offscreenImageView = VK_NULL_HANDLE;
     VkFramebuffer m_offscreenFramebuffer = VK_NULL_HANDLE;
     VkRenderPass m_offscreenRenderPass = VK_NULL_HANDLE;
     VkSampler m_offscreenSampler = VK_NULL_HANDLE;
@@ -81,6 +77,17 @@ private:
     VkDescriptorSetLayout m_offscreenDescriptorSetLayout = VK_NULL_HANDLE;
     VkFormat m_offscreenFormat = VK_FORMAT_B8G8R8A8_SRGB;
     VkExtent2D m_offscreenExtent{};
+
+    // Multi sampled color image
+    VkImage m_offscreenImage = VK_NULL_HANDLE;
+    VkDeviceMemory m_offscreenImageMemory = VK_NULL_HANDLE;
+    VkImageView m_offscreenImageView = VK_NULL_HANDLE;
+    // Resolve image - Not multi sampled
+    VkImage m_offscreenResolveImage = VK_NULL_HANDLE;
+    VkDeviceMemory m_offscreenResolveMemory = VK_NULL_HANDLE;
+    VkImageView m_offscreenResolveImageView = VK_NULL_HANDLE;
+
+    // Depth attachment
     VkImage m_offscreenDepthImage = VK_NULL_HANDLE;
     VkDeviceMemory m_offscreenDepthMemory = VK_NULL_HANDLE;
     VkImageView m_offscreenDepthView = VK_NULL_HANDLE;

@@ -159,7 +159,7 @@ void Renderer::createOffscreenResources() {
     m_offscreenExtent = windowRef.getExtent();
     m_offscreenFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
-    // Create color image + view
+    // Create color attachment
     VkImageCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     createInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -172,11 +172,34 @@ void Renderer::createOffscreenResources() {
     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     createInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    createInfo.samples = deviceRef.getSampleCount();
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.flags = 0;
+
+    // Create color resolve attachment
+    VkImageCreateInfo colorResolveCreateInfo{};
+    colorResolveCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    colorResolveCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+    colorResolveCreateInfo.extent.width = m_offscreenExtent.width;
+    colorResolveCreateInfo.extent.height = m_offscreenExtent.height;
+    colorResolveCreateInfo.extent.depth = 1;
+    colorResolveCreateInfo.mipLevels = 1;
+    colorResolveCreateInfo.arrayLayers = 1;
+    colorResolveCreateInfo.format = m_offscreenFormat;
+    colorResolveCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    colorResolveCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorResolveCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    colorResolveCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorResolveCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    colorResolveCreateInfo.flags = 0;
+
+    // Multi sampled color
     deviceRef.createImageWithInfo(createInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_offscreenImage, m_offscreenImageMemory);
     m_offscreenImageView = m_SwapChain->createImageView(m_offscreenImage, m_offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+
+    // Resolve (single sampled)
+    deviceRef.createImageWithInfo(colorResolveCreateInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_offscreenResolveImage, m_offscreenResolveMemory);
+    m_offscreenResolveImageView = m_SwapChain->createImageView(m_offscreenResolveImage, m_offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 
     // Create sampler
     VkSamplerCreateInfo samplerInfo{};
@@ -209,7 +232,7 @@ void Renderer::createOffscreenResources() {
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.samples = deviceRef.getSampleCount();
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.flags = 0;
 
@@ -231,6 +254,7 @@ void Renderer::createOffscreenResources() {
     }
 
     transitionImageLayout(m_offscreenImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    transitionImageLayout(m_offscreenResolveImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     createOffscreenRenderPass();
@@ -266,9 +290,21 @@ void Renderer::cleanupOffscreenResources() {
         vkDestroyImageView(device, m_offscreenImageView, nullptr);
         m_offscreenImageView = VK_NULL_HANDLE;
     }
+    if (m_offscreenResolveImageView) {
+        vkDestroyImageView(device, m_offscreenResolveImageView, nullptr);
+        m_offscreenResolveImageView = VK_NULL_HANDLE;
+    }
+    if (m_offscreenResolveImage) {
+        vkDestroyImage(device, m_offscreenResolveImage, nullptr);
+        m_offscreenResolveImage = VK_NULL_HANDLE;
+    }
     if (m_offscreenImage) {
         vkDestroyImage(device, m_offscreenImage, nullptr);
         m_offscreenImage = VK_NULL_HANDLE;
+    }
+    if (m_offscreenResolveMemory) {
+        vkFreeMemory(device, m_offscreenResolveMemory, nullptr);
+        m_offscreenResolveMemory = VK_NULL_HANDLE;
     }
     if (m_offscreenImageMemory) {
         vkFreeMemory(device, m_offscreenImageMemory, nullptr);
@@ -295,7 +331,7 @@ void Renderer::cleanupOffscreenResources() {
 void Renderer::createOffscreenRenderPass() {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = m_offscreenFormat;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment.samples = deviceRef.getSampleCount();
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -305,13 +341,23 @@ void Renderer::createOffscreenRenderPass() {
 
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = m_SwapChain->findDepthFormat();
-    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.samples = deviceRef.getSampleCount();
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentDescription colorAttachmentResolve = {};
+    colorAttachmentResolve.format = m_offscreenFormat;
+    colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
@@ -321,11 +367,16 @@ void Renderer::createOffscreenRenderPass() {
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass{};
+    VkAttachmentReference colorAttachmentResolveRef = {};
+    colorAttachmentResolveRef.attachment = 2;
+    colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
+    subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
     // Subpass dependency for layout transitions
     VkSubpassDependency dependency{};
@@ -335,9 +386,8 @@ void Renderer::createOffscreenRenderPass() {
     dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependency.srcAccessMask = 0;
     dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependency.dependencyFlags = 0;
 
-    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+    std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -354,7 +404,7 @@ void Renderer::createOffscreenRenderPass() {
 }
 
 void Renderer::createOffscreenFramebuffer() {
-    std::array<VkImageView, 2> attachments = {m_offscreenImageView, m_offscreenDepthView};
+    std::array<VkImageView, 3> attachments = {m_offscreenImageView, m_offscreenDepthView, m_offscreenResolveImageView};
 
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -416,7 +466,7 @@ void Renderer::createOffscreenDescriptorSet() {
     // Update descriptor set for the offscreen image
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = m_offscreenImageView;
+    imageInfo.imageView = m_offscreenResolveImageView;
     imageInfo.sampler = m_offscreenSampler;
 
     VkWriteDescriptorSet descriptorWrite{};
@@ -433,7 +483,8 @@ void Renderer::createOffscreenDescriptorSet() {
 
 void Renderer::beginOffscreenRenderPass(VkCommandBuffer commandBuffer) {
     if (m_offscreenCurrentLayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
-        transitionImageLayout(m_offscreenImage, m_offscreenCurrentLayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        transitionImageLayout(m_offscreenImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        transitionImageLayout(m_offscreenResolveImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 
@@ -444,10 +495,11 @@ void Renderer::beginOffscreenRenderPass(VkCommandBuffer commandBuffer) {
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = m_offscreenExtent;
 
-    std::array<VkClearValue, 2> clearValues{};
+    std::array<VkClearValue, 3> clearValues{};
     clearValues[0].color = {0.1f, 0.1f, 0.15f, 1.0f};
     clearValues[1].depthStencil = {1.0f, 0};
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    clearValues[2].color = {0.0f, 0.0f, 0.0f, 0.0f};
+    renderPassInfo.clearValueCount = 3;
     renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -470,7 +522,7 @@ void Renderer::endOffscreenRenderPass(VkCommandBuffer commandBuffer) const {
 
 void Renderer::transitionOffscreenImageForImGui() {
     if (m_offscreenCurrentLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-        transitionImageLayout(m_offscreenImage, m_offscreenCurrentLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        transitionImageLayout(m_offscreenResolveImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
 }
