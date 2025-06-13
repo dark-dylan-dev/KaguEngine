@@ -6,6 +6,7 @@ module KaguEngine.ImGuiContext;
 
 import KaguEngine.Device;
 import KaguEngine.SwapChain;
+import KaguEngine.Renderer;
 import KaguEngine.Window;
 
 namespace KaguEngine {
@@ -58,9 +59,9 @@ void ImGuiContext::setupContext() const {
     init_info.DescriptorPool = poolRef->getDescriptorPool();
     init_info.Allocator = nullptr;
     init_info.Subpass = 0;
-    init_info.MinImageCount = swapChainRef.MAX_FRAMES_IN_FLIGHT;
-    init_info.MSAASamples = deviceRef.getSampleCount();
-    init_info.ImageCount = swapChainRef.MAX_FRAMES_IN_FLIGHT;
+    init_info.MinImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;//deviceRef.getSampleCount();
+    init_info.ImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
     //init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info);
 
@@ -71,12 +72,9 @@ void ImGuiContext::recreateSwapChain() const {
     ImGui_ImplVulkan_SetMinImageCount(swapChainRef.MAX_FRAMES_IN_FLIGHT);
 }
 
-void ImGuiContext::render(VkCommandBuffer commandBuffer) {
+void ImGuiContext::render(Renderer& renderer) {
     beginRender();
-    onRender();
-    ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
-    endRender();
+    onRender(renderer);
 }
 
 void ImGuiContext::beginRender() {
@@ -85,16 +83,42 @@ void ImGuiContext::beginRender() {
     ImGui::NewFrame();
 }
 
-void ImGuiContext::onRender() {
-    ImGuiIO& io = ImGui::GetIO();
-    // Demo window
+void ImGuiContext::onRender(Renderer& renderer) {
+    // Main viewport init
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    constexpr ImGuiWindowFlags hostFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                                           ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                           ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+                                           ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking;
+
+    // Dockspace
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("DockSpaceHost", nullptr, hostFlags);
+    ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
+    ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::End();
+    ImGui::PopStyleVar();
+
+    // Scene viewport
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImVec2 availableSpace = ImGui::GetContentRegionAvail();
+    ImGui::Image(reinterpret_cast<ImTextureID>(renderer.getOffscreenImGuiDescriptorSet()), availableSpace);
+    ImGui::End();
+    ImGui::PopStyleVar();
+
+    // Demo
     ImGui::ShowDemoWindow();
-    // Other window
-    {
-        ImGui::Begin("Other window");
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        ImGui::End();
-    }
+}
+
+void ImGuiContext::onPresent(VkCommandBuffer commandBuffer) {
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+    endRender();
 }
 
 void ImGuiContext::endRender() {

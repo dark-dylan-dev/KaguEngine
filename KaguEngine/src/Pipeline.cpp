@@ -209,7 +209,7 @@ void Pipeline::enableAlphaBlending(PipelineConfigInfo &configInfo) {
 }
 
 void Pipeline::enableMSAA(PipelineConfigInfo &configInfo, const VkSampleCountFlagBits &msaaLevel) {
-    configInfo.multisampleInfo.rasterizationSamples = msaaLevel;
+    configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;//msaaLevel;
 }
 
 } // Namespace KaguEngine

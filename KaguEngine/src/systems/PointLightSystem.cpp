@@ -61,7 +61,7 @@ void PointLightSystem::createPipeline(const VkRenderPass renderPass) {
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     Pipeline::enableAlphaBlending(pipelineConfig);
-    Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
+    //Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
     pipelineConfig.attributeDescriptions.clear();
     pipelineConfig.bindingDescriptions.clear();
     pipelineConfig.renderPass = renderPass;
