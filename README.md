@@ -57,15 +57,15 @@ git submodule update --init --recursive
 
 Linux dependencies
 ```bash
-# Debian, Ubuntu
+# APT
 sudo apt-get update
 sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
 
-# Arch Linux
+# Pacman
 sudo pacman -Syu
 sudo pacman -S --noconfirm libxkbcommon xorg-xinerama xorg-xcursor libxi mesa
 
-# Fedora, RedHat
+# DNF
 sudo dnf makecache
 sudo dnf install -y libxkbcommon-devel libXinerama-devel libXcursor-devel libXi-devel mesa-libGL-devel
 ```
@@ -82,6 +82,18 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
 > Available build configurations : Debug, Release, RelWithDebInfo, MinSizeRel
+
+<details>
+<summary>Having a generator issue ?</summary>
+
+You might get an error message while generating `Unsupported generator: ...`
+
+It's because the `import std;` feature is not yet supported by this toolchain, 
+consider using Ninja adding the `-G Ninja` flag to your command.
+
+Note : Ninja version >= 1.11 is needed, check running `ninja --version`
+
+</details>
 
 <div align="center">
 

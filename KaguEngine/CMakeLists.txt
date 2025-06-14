@@ -36,3 +36,17 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
     target_link_options(KaguEngine PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
 endif()
+
+# Copy the assets in the build directory
+set(SOURCE_ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
+set(DEST_ASSETS_DIR ${CMAKE_CURRENT_BINARY_DIR}/assets)
+add_custom_command(
+        OUTPUT ${DEST_ASSETS_DIR}/.copied
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${SOURCE_ASSETS_DIR} ${DEST_ASSETS_DIR}
+        COMMAND ${CMAKE_COMMAND} -E touch ${DEST_ASSETS_DIR}/.copied
+        COMMENT "Copying assets/ to <build_dir>/KaguEngine/"
+)
+add_custom_target(copy_assets ALL
+        DEPENDS ${DEST_ASSETS_DIR}/.copied
+)
