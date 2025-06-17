@@ -6,8 +6,11 @@ add_executable(KaguEngine)
 
 target_sources(KaguEngine PRIVATE ${CPP_SOURCES})
 target_sources(KaguEngine PRIVATE
-        FILE_SET all_modules TYPE CXX_MODULES
-        FILES ${CPP_MODULES}
+    FILE_SET all_modules TYPE CXX_MODULES
+    FILES ${CPP_MODULES}
+)
+set_target_properties(KaguEngine PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
 )
 
 # Adding external libraries
@@ -39,8 +42,11 @@ endif()
 
 # Linker options (to disable console window in Release build)
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-    set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
-    target_link_options(KaguEngine PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
+    if(MSVC)
+        target_link_options(KaguEngine PRIVATE /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup)
+    else()
+        target_link_options(KaguEngine PRIVATE -mwindows)
+    endif()
 endif()
 
 # Copy the assets in the build directory

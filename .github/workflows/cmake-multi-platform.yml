@@ -2,7 +2,7 @@ name: CMake on Windows/Linux
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "CMake-modifications" ]
   pull_request:
     branches: [ "master" ]
 
@@ -11,18 +11,18 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
         c_compiler: [clang, cl]
         include:
-        - os: windows-latest
-          c_compiler: cl
-          cpp_compiler: cl
-        - os: ubuntu-latest
-          c_compiler: clang
-          cpp_compiler: clang++
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
         exclude:
           - os: windows-latest
             c_compiler: clang
@@ -57,30 +57,28 @@ jobs:
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
+      - name: Set up MSVC Developer Command Prompt
+        if: matrix.c_compiler == 'cl'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure CMake with Clang
         if: matrix.c_compiler == 'clang'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_STANDARD=23
-          -DCMAKE_C_COMPILER=clang
-          -DCMAKE_CXX_COMPILER=clang++
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_CXX_FLAGS="-stdlib=libc++"
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -G Ninja
 
-      - name: Set up MSVC Developer Command Prompt
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Configure CMake with MSVC
-        if: runner.os == 'Windows'
+        if: matrix.c_compiler == 'cl'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_STANDARD=23
-          -DCMAKE_C_COMPILER=cl
-          -DCMAKE_CXX_COMPILER=cl
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -G Ninja
 
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --parallel 9
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 9
