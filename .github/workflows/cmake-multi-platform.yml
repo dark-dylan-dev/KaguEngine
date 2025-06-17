@@ -55,20 +55,33 @@ jobs:
             libgl1-mesa-dev libc++-dev libc++abi-dev \
             libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
 
-      - name: Set up Miniconda (GCC)
-        if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: gccenv
-          auto-activate-base: false
-
-      - name: Install GCC 15.1 via conda
-        if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
-        shell: bash -l {0}
+      - name: Download GCC 15 debs from Debian experimental
+        if: matrix.c_compiler == 'gcc'
         run: |
-          conda install -c conda-forge gcc=15.1.0 gxx=15.1.0 -y
-          echo "CC=$(which gcc)" >> $GITHUB_ENV
-          echo "CXX=$(which g++)" >> $GITHUB_ENV
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15-base_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/cpp-15_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/g++-15_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libstdc++-15-dev_15.1.0-8_amd64.deb
+
+      - name: Install GCC 15 and dependencies
+        if: matrix.c_compiler == 'gcc'
+        run: |
+          sudo apt-get update
+          sudo dpkg -i gcc-15-base_15.1.0-8_amd64.deb
+          sudo dpkg -i cpp-15_15.1.0-8_amd64.deb
+          sudo dpkg -i gcc-15_15.1.0-8_amd64.deb
+          sudo dpkg -i g++-15_15.1.0-8_amd64.deb
+          sudo dpkg -i libstdc++-15-dev_15.1.0-8_amd64.deb
+          sudo apt-get -f install -y # Fix any missing dependencies
+
+      - name: Set GCC 15 as default
+        if: matrix.c_compiler == 'gcc'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
+          gcc --version
+          g++ --version
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
@@ -97,10 +110,8 @@ jobs:
         if: matrix.c_compiler == 'gcc'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_C_COMPILER=$CC
-          -DCMAKE_CXX_COMPILER=$CXX
-          -DCMAKE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
-          -DCMAKE_INCLUDE_PATH=/usr/include
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -G Ninja
 
       - name: Configure CMake with MSVC
