@@ -3,13 +3,13 @@ module;
 // libs
 #include <vulkan/vulkan.h>
 
+export module KaguEngine.Texture;
+
 // std
 import std;
 
 import KaguEngine.Device;
 import KaguEngine.SwapChain;
-
-export module KaguEngine.Texture;
 
 export namespace KaguEngine {
 

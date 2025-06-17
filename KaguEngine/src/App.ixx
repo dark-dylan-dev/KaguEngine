@@ -3,7 +3,9 @@ module;
 // libs
 #include <vulkan/vulkan.h>
 
-// std
+export module App;
+
+// std - exported for convenience in main.cpp
 export import std;
 
 import KaguEngine.Descriptor;
@@ -11,8 +13,6 @@ import KaguEngine.Device;
 import KaguEngine.Entity;
 import KaguEngine.Renderer;
 import KaguEngine.Window;
-
-export module App;
 
 export namespace KaguEngine {
 

@@ -4,10 +4,10 @@ module;
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+export module KaguEngine.Window;
+
 // std
 import std;
-
-export module KaguEngine.Window;
 
 export namespace KaguEngine {
 

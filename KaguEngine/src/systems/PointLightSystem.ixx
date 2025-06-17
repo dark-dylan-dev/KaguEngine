@@ -8,10 +8,10 @@ module;
 
 #include <vulkan/vulkan.h>
 
+export module KaguEngine.System.PointLight;
+
 // std
 import std;
-
-export module KaguEngine.System.PointLight;
 
 import KaguEngine.Device;
 import KaguEngine.Entity;

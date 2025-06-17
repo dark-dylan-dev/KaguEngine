@@ -6,14 +6,14 @@ module;
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
+export module KaguEngine.Model;
+
 // std
 import std;
 
 import KaguEngine.Buffer;
 import KaguEngine.Device;
 import KaguEngine.Utils;
-
-export module KaguEngine.Model;
 
 export namespace KaguEngine {
 

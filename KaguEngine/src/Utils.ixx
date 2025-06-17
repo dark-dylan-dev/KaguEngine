@@ -1,9 +1,9 @@
 module;
 
+export module KaguEngine.Utils;
+
 // std
 import std;
-
-export module KaguEngine.Utils;
 
 export namespace KaguEngine {
 

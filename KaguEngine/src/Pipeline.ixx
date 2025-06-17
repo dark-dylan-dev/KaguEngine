@@ -3,12 +3,12 @@ module;
 // libs
 #include <vulkan/vulkan.h>
 
+export module KaguEngine.Pipeline;
+
 // std
 import std;
 
 import KaguEngine.Device;
-
-export module KaguEngine.Pipeline;
 
 export namespace KaguEngine {
 

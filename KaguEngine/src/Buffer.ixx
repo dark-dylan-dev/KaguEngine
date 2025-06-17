@@ -3,9 +3,9 @@ module;
 // libs
 #include <vulkan/vulkan.h>
 
-import KaguEngine.Device;
-
 export module KaguEngine.Buffer;
+
+import KaguEngine.Device;
 
 export namespace KaguEngine {
 

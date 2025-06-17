@@ -4,10 +4,10 @@ module;
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
+export module KaguEngine.FrameInfo;
+
 import KaguEngine.Camera;
 import KaguEngine.Entity;
-
-export module KaguEngine.FrameInfo;
 
 export namespace KaguEngine {
 

@@ -3,13 +3,13 @@ module;
 // libs
 #include <glm/glm.hpp>
 
+export module KaguEngine.Entity;
+
 // std
 import std;
 
 import KaguEngine.Model;
 import KaguEngine.Texture;
-
-export module KaguEngine.Entity;
 
 export namespace KaguEngine {
 

@@ -6,14 +6,14 @@ module;
 // std
 #include <cassert>
 
+export module KaguEngine.Renderer;
+
 // std
 import std;
 
 import KaguEngine.Device;
 import KaguEngine.SwapChain;
 import KaguEngine.Window;
-
-export module KaguEngine.Renderer;
 
 export namespace KaguEngine {
 

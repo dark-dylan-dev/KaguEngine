@@ -7,10 +7,10 @@ module;
 
 #include <vulkan/vulkan.h>
 
+export module KaguEngine.System.Render;
+
 // std
 import std;
-
-export module KaguEngine.System.Render;
 
 import KaguEngine.Camera;
 import KaguEngine.Device;

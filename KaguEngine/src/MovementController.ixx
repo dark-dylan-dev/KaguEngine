@@ -3,12 +3,12 @@ module;
 // libs
 #include <GLFW/glfw3.h>
 
+export module KaguEngine.MovementController;
+
 // std
 import std;
 
 import KaguEngine.Entity;
-
-export module KaguEngine.MovementController;
 
 export namespace KaguEngine {
 
