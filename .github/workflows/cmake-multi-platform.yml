@@ -52,14 +52,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libc++-dev libc++abi-dev
 
-      - name: Install GCC 15
-        if: matrix.c_compiler == 'gcc'
+      - name: Set up Miniconda (GCC)
+        if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: gccenv
+          auto-activate-base: false
+
+      - name: Install GCC 15.1 via conda
+        if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
+        shell: bash -l {0}
         run: |
-          wget https://ftp.gnu.org/gnu/gcc/gcc-15.1.0/gcc-15.1.0.tar.xz
-          tar -xf gcc-15.1.0.tar.xz
-          echo "${PWD}/gcc-15.1.0/bin" >> $GITHUB_PATH
-          echo "CC=gcc" >> $GITHUB_ENV
-          echo "CXX=g++" >> $GITHUB_ENV
+          conda install -c conda-forge gcc=15.1.0 gxx=15.1.0 -y
+          echo "CC=$(which gcc)" >> $GITHUB_ENV
+          echo "CXX=$(which g++)" >> $GITHUB_ENV
+          gcc --version
+          g++ --version
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
@@ -84,8 +92,16 @@ jobs:
           -DCMAKE_CXX_FLAGS="-stdlib=libc++"
           -G Ninja
 
-      - name: Configure CMake without Clang
-        if: matrix.c_compiler != 'clang'
+      - name: Configure CMake with GCC
+        if: matrix.c_compiler == 'gcc'
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_C_COMPILER=$CC
+          -DCMAKE_CXX_COMPILER=$CXX
+          -G Ninja
+
+      - name: Configure CMake with MSVC
+        if: matrix.c_compiler == 'cl'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -G Ninja
