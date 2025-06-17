@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [clang, cl]
+        c_compiler: [clang, cl, gcc]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -23,9 +23,14 @@ jobs:
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
         exclude:
           - os: windows-latest
             c_compiler: clang
+          - os: windows-latest
+            c_compiler: gcc
           - os: ubuntu-latest
             c_compiler: cl
 
@@ -46,6 +51,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libc++-dev libc++abi-dev
+
+      - name: Install GCC 15
+        if: matrix.c_compiler == 'gcc'
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update
+          sudo apt-get install -y gcc-15 g++-15
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
@@ -70,8 +84,8 @@ jobs:
           -DCMAKE_CXX_FLAGS="-stdlib=libc++"
           -G Ninja
 
-      - name: Configure CMake with MSVC
-        if: matrix.c_compiler == 'cl'
+      - name: Configure CMake without Clang
+        if: matrix.c_compiler != 'clang'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -G Ninja
