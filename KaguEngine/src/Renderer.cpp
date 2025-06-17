@@ -19,6 +19,7 @@ import KaguEngine.Window;
 namespace KaguEngine {
 
 Renderer::Renderer(Window &window, Device &device) : windowRef{window}, deviceRef{device} {
+    m_currentImageIndex = 0;
     recreateSwapChain();
     createOffscreenResources();
     createCommandBuffers();
@@ -156,7 +157,7 @@ void Renderer::endSwapChainRenderPass(const VkCommandBuffer commandBuffer) const
 void Renderer::createOffscreenResources() {
     cleanupOffscreenResources();
 
-    m_offscreenExtent = windowRef.getExtent();
+    m_offscreenExtent = m_SwapChain->getSwapChainExtent();
     m_offscreenFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
     // Create color attachment
@@ -263,7 +264,7 @@ void Renderer::createOffscreenResources() {
 }
 
 void Renderer::cleanupOffscreenResources() {
-    auto device = deviceRef.device();
+    const auto device = deviceRef.device();
 
     if (m_offscreenImGuiDescriptorSet) {
         // ImGui will clean up its descriptor set, do not free here
@@ -404,7 +405,7 @@ void Renderer::createOffscreenRenderPass() {
 }
 
 void Renderer::createOffscreenFramebuffer() {
-    std::array<VkImageView, 3> attachments = {m_offscreenImageView, m_offscreenDepthView, m_offscreenResolveImageView};
+    const std::array<VkImageView, 3> attachments = {m_offscreenImageView, m_offscreenDepthView, m_offscreenResolveImageView};
 
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -421,7 +422,7 @@ void Renderer::createOffscreenFramebuffer() {
 }
 
 void Renderer::createOffscreenDescriptorSet() {
-    auto device = deviceRef.device();
+    const auto device = deviceRef.device();
 
     // Descriptor pool for one sampled image
     VkDescriptorPoolSize poolSize{};
@@ -511,7 +512,7 @@ void Renderer::beginOffscreenRenderPass(VkCommandBuffer commandBuffer) {
     viewport.height = static_cast<float>(m_offscreenExtent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    VkRect2D scissor{{0, 0}, m_offscreenExtent};
+    const VkRect2D scissor{{0, 0}, m_offscreenExtent};
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }

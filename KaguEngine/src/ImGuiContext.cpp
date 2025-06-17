@@ -69,7 +69,7 @@ void ImGuiContext::setupContext() const {
 }
 
 void ImGuiContext::recreateSwapChain() const {
-    ImGui_ImplVulkan_SetMinImageCount(swapChainRef.MAX_FRAMES_IN_FLIGHT);
+    ImGui_ImplVulkan_SetMinImageCount(SwapChain::MAX_FRAMES_IN_FLIGHT);
 }
 
 void ImGuiContext::render(Renderer& renderer) {

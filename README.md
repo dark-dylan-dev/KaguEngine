@@ -78,8 +78,8 @@ sudo dnf install -y libxkbcommon-devel libXinerama-devel libXcursor-devel libXi-
 
  - Inside the `KaguEngine/` directory, run :
 ```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release
+cmake -B build      # optional: add -DCMAKE_BUILD_TYPE=<BuildType>
+cmake --build build # optional: add --config <BuildType>
 ```
 > Available build configurations : Debug, Release, RelWithDebInfo, MinSizeRel
 
@@ -89,9 +89,9 @@ cmake --build build --config Release
 You might get an error message while generating `Unsupported generator: ...`
 
 It's because the `import std;` feature is not yet supported by this toolchain, 
-consider using Ninja adding the `-G Ninja` flag to your command.
+consider using Ninja.
 
-Note : Ninja version >= 1.11 is needed, check running `ninja --version`
+Do so by adding the `-G Ninja` flag to the first command.
 
 </details>
 

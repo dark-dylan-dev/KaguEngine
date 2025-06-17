@@ -31,8 +31,14 @@ target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan)
 # Enforces C++23 on the target
 target_compile_features(KaguEngine PRIVATE cxx_std_23)
 
+# Set default build type to Release if not specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    message(STATUS "No build type specified, defaulting to Release")
+endif()
+
 # Linker options (to disable console window in Release build)
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
     target_link_options(KaguEngine PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
 endif()
@@ -41,12 +47,12 @@ endif()
 set(SOURCE_ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 set(DEST_ASSETS_DIR ${CMAKE_CURRENT_BINARY_DIR}/assets)
 add_custom_command(
-        OUTPUT ${DEST_ASSETS_DIR}/.copied
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${SOURCE_ASSETS_DIR} ${DEST_ASSETS_DIR}
-        COMMAND ${CMAKE_COMMAND} -E touch ${DEST_ASSETS_DIR}/.copied
-        COMMENT "Copying assets/ to <build_dir>/KaguEngine/"
+    OUTPUT ${DEST_ASSETS_DIR}/.copied
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${SOURCE_ASSETS_DIR} ${DEST_ASSETS_DIR}
+    COMMAND ${CMAKE_COMMAND} -E touch ${DEST_ASSETS_DIR}/.copied
+    COMMENT "Copying ${SOURCE_ASSETS_DIR} to ${DEST_ASSETS_DIR}"
 )
 add_custom_target(copy_assets ALL
-        DEPENDS ${DEST_ASSETS_DIR}/.copied
+    DEPENDS ${DEST_ASSETS_DIR}/.copied
 )
