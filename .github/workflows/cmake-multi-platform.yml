@@ -59,11 +59,15 @@ jobs:
         if: matrix.c_compiler == 'gcc'
         run: |
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15-base_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/cpp-15_15.1.0-8_amd64.deb
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/cpp-15-x86-64-linux-gnu_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/cpp-15_15.1.0-8_amd64.deb
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15-x86-64-linux-gnu_15.1.0-8_amd64.deb
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/g++-15-x86-64-linux-gnu_15.1.0-8_amd64.deb
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/g++-15_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libcc1-0_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libgcc-15-dev_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libstdc++6_15.1.0-8_amd64.deb
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libstdc++-15-dev_15.1.0-8_amd64.deb
           sudo dpkg -i *.deb
           sudo apt-get -f install -y
