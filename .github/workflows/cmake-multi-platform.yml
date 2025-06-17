@@ -46,11 +46,14 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      - name: Install dependencies (Ubuntu)
+      - name: Install system dependencies (Ubuntu)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libc++-dev libc++abi-dev
+          sudo apt-get install -y \
+            libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev \
+            libgl1-mesa-dev libc++-dev libc++abi-dev \
+            libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
 
       - name: Set up Miniconda (GCC)
         if: matrix.os == 'ubuntu-latest' && matrix.c_compiler == 'gcc'
@@ -66,8 +69,6 @@ jobs:
           conda install -c conda-forge gcc=15.1.0 gxx=15.1.0 -y
           echo "CC=$(which gcc)" >> $GITHUB_ENV
           echo "CXX=$(which g++)" >> $GITHUB_ENV
-          gcc --version
-          g++ --version
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
