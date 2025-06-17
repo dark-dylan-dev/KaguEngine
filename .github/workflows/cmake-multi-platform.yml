@@ -69,6 +69,16 @@ jobs:
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libgcc-15-dev_15.1.0-8_amd64.deb
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libstdc++6_15.1.0-8_amd64.deb
           wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libstdc++-15-dev_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libgcc-s1_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libgomp1_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libitm1_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libatomic1_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libasan8_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/liblsan0_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libtsan2_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libubsan1_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libhwasan0_15.1.0-8_amd64.deb
+          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libquadmath0_15.1.0-8_amd64.deb
           sudo dpkg -i *.deb
           sudo apt-get -f install -y
 
