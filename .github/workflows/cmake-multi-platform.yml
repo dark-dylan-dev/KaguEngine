@@ -89,6 +89,14 @@ jobs:
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
           gcc --version
           g++ --version
+          echo "CC=/usr/bin/gcc-15" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/g++-15" >> $GITHUB_ENV
+          which gcc
+          which g++
+          gcc --version
+          g++ --version
+          echo $CC
+          echo $CXX
 
       - name: Check GCC 15.1.0-8 modules
         if: matrix.c_compiler == 'gcc'
@@ -125,9 +133,8 @@ jobs:
         if: matrix.c_compiler == 'gcc'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_CXX_FLAGS="-std=c++23 -fmodules-ts"
+          -DCMAKE_C_COMPILER=$CC
+          -DCMAKE_CXX_COMPILER=$CXX
           -G Ninja
 
       - name: Configure CMake with MSVC
