@@ -66,6 +66,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libx11-dev libwayland-dev libegl1-mesa-dev pkg-config jq
+          echo "alias sudo=''" >> ~/.bashrc
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
