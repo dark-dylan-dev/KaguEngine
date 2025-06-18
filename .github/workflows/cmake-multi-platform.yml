@@ -55,68 +55,31 @@ jobs:
             libgl1-mesa-dev libc++-dev libc++abi-dev \
             libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
 
-      - name: Download GCC 15 debs from Debian experimental
+      - name: Download GCC 15 (GCC)
         if: matrix.c_compiler == 'gcc'
         run: |
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15-base_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/cpp-15-x86-64-linux-gnu_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/cpp-15_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15-x86-64-linux-gnu_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/gcc-15_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/g++-15-x86-64-linux-gnu_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/g++-15_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libcc1-0_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libgcc-15-dev_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libstdc++6_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libstdc++-15-dev_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libgcc-s1_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libgomp1_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libitm1_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libatomic1_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libasan8_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/liblsan0_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libtsan2_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libubsan1_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libhwasan0_15.1.0-8_amd64.deb
-          wget http://ftp.fr.debian.org/debian/pool/main/g/gcc-15/libquadmath0_15.1.0-8_amd64.deb
-          sudo dpkg -i *.deb
-          sudo apt-get -f install -y
-
-      - name: Set GCC 15 as default
-        if: matrix.c_compiler == 'gcc'
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
+          sudo apt update && sudo apt upgrade -y
+          sudo g++ --version && g++ --version
+          sudo apt install -y build-essential git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev python3 binutils perl libisl-dev libzstd-dev tar gzip bzip2
+          export CONFIG_SHELL=/bin/bash
+          mkdir ~/gcc-15
+          cd ~/gcc-15
+          git clone https://gcc.gnu.org/git/gcc.git gcc-15-source
+          cd gcc-15-source
+          git checkout releases/gcc-15.1.0
+          ./contrib/download_prerequisites
+          cd ~/gcc-15
+          mkdir gcc-15-build
+          cd gcc-15-build
+          ../gcc-15-source/configure --prefix=/opt/gcc-15 --disable-multilib --enable-languages=c,c++
+          make -j$(nproc)
+          sudo make install
+          sudo update-alternatives --install /usr/bin/gcc gcc /opt/gcc-15/bin/gcc 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /opt/gcc-15/bin/g++ 100
+          sudo update-alternatives --config gcc
+          sudo update-alternatives --config g++
           gcc --version
           g++ --version
-          echo "CC=/usr/bin/gcc-15" >> $GITHUB_ENV
-          echo "CXX=/usr/bin/g++-15" >> $GITHUB_ENV
-          which gcc
-          which g++
-          gcc --version
-          g++ --version
-          echo $CC
-          echo $CXX
-
-      - name: Build standard library modules for GCC 15 (experimental)
-        if: matrix.c_compiler == 'gcc'
-        run: |
-          set -eux
-          MODULE_DIR="$PWD/gcc-std-gcm"
-          mkdir -p "$MODULE_DIR"
-          HEADERS="iostream vector string map set memory algorithm utility tuple array"
-          for hdr in $HEADERS; do
-            g++-15 -std=c++23 -fmodules-ts -x c++-system-header $hdr -o "$MODULE_DIR/${hdr}.gcm" || true
-          done
-          ls -lh "$MODULE_DIR"
-
-#      - name: Check GCC 15.1.0-8 modules
-#        if: matrix.c_compiler == 'gcc'
-#        run: |
-#          echo '{"version":1,"revision":1,"modules":[{"logical-name":"std","source-path":"bits/std.cc","is-std-library":true},{"logical-name":"std.compat","source-path":"bits/std.compat.cc","is-std-library":true}]}' | sudo tee /usr/include/c++/15/libstdc++.modules.json > /dev/null
-#          sudo chmod 644 /usr/include/c++/15/libstdc++.modules.json
-#          g++-15 -std=c++23 -fmodules-ts -c /usr/include/c++/15/bits/std.cc
-#          g++-15 -std=c++23 -fmodules-ts -c /usr/include/c++/15/bits/std.compat.cc
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
@@ -145,8 +108,8 @@ jobs:
         if: matrix.c_compiler == 'gcc'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_C_COMPILER=$CC
-          -DCMAKE_CXX_COMPILER=$CXX
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -G Ninja
 
       - name: Configure CMake with MSVC
