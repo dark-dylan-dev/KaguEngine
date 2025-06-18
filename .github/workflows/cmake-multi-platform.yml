@@ -95,9 +95,8 @@ jobs:
         run: |
           echo '{"version":1,"revision":1,"modules":[{"logical-name":"std","source-path":"bits/std.cc","is-std-library":true},{"logical-name":"std.compat","source-path":"bits/std.compat.cc","is-std-library":true}]}' | sudo tee /usr/include/c++/15/libstdc++.modules.json > /dev/null
           sudo chmod 644 /usr/include/c++/15/libstdc++.modules.json
-          find /usr/include/c++/15/ -name '*.cc'
-          find /usr/include/c++/15/ -name '*.json'
-          find /usr/include/c++/15/ -name '*.modules.json'
+          g++-15 -std=c++23 -fmodules-ts -xc++-system-header /usr/include/c++/15/bits/std.cc -c
+          g++-15 -std=c++23 -fmodules-ts -xc++-system-header /usr/include/c++/15/bits/std.compat.cc -c
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
@@ -128,6 +127,7 @@ jobs:
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_CXX_FLAGS="-std=c++23 -fmodules-ts"
           -G Ninja
 
       - name: Configure CMake with MSVC
