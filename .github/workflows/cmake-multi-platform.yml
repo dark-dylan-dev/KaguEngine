@@ -34,6 +34,9 @@ jobs:
           - os: ubuntu-latest
             c_compiler: cl
 
+    container:
+      image: ${{ matrix.c_compiler == 'gcc' && 'gcc:15.1.0' || null }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,29 +58,9 @@ jobs:
             libgl1-mesa-dev libc++-dev libc++abi-dev \
             libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
 
-      - name: Download GCC 15 (GCC)
+      - name: Check GCC version
         if: matrix.c_compiler == 'gcc'
         run: |
-          sudo apt update && sudo apt upgrade -y
-          sudo g++ --version && g++ --version
-          sudo apt install -y build-essential git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev python3 binutils perl libisl-dev libzstd-dev tar gzip bzip2
-          export CONFIG_SHELL=/bin/bash
-          mkdir ~/gcc-15
-          cd ~/gcc-15
-          git clone https://gcc.gnu.org/git/gcc.git gcc-15-source
-          cd gcc-15-source
-          git checkout releases/gcc-15.1.0
-          ./contrib/download_prerequisites
-          cd ~/gcc-15
-          mkdir gcc-15-build
-          cd gcc-15-build
-          ../gcc-15-source/configure --prefix=/opt/gcc-15 --disable-multilib --enable-languages=c,c++
-          make -j$(nproc)
-          sudo make install
-          sudo update-alternatives --install /usr/bin/gcc gcc /opt/gcc-15/bin/gcc 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /opt/gcc-15/bin/g++ 100
-          sudo update-alternatives --config gcc
-          sudo update-alternatives --config g++
           gcc --version
           g++ --version
 
