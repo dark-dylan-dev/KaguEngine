@@ -65,7 +65,25 @@ jobs:
         if: matrix.c_compiler == 'gcc'
         run: |
           apt-get update
-          apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libx11-dev libwayland-dev libegl1-mesa-dev pkg-config jq cmake
+          apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libx11-dev libwayland-dev libegl1-mesa-dev pkg-config jq
+          
+      - name: Install CMake 3.31.5 (GCC)
+        if: matrix.c_compiler == 'gcc'
+        run: |
+          CMAKE_VERSION=3.31.5
+          CMAKE_OS=linux
+          CMAKE_ARCH=x86_64
+          CMAKE_FOLDER=cmake-$CMAKE_VERSION-$CMAKE_OS-$CMAKE_ARCH
+          CMAKE_TAR=$CMAKE_FOLDER.tar.gz
+          wget --no-verbose https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/$CMAKE_TAR
+          tar -xzf $CMAKE_TAR
+          mv $CMAKE_FOLDER /opt/cmake
+          ln -sf /opt/cmake/bin/cmake /usr/local/bin/cmake
+          ln -sf /opt/cmake/bin/ctest /usr/local/bin/ctest
+          ln -sf /opt/cmake/bin/cpack /usr/local/bin/cpack
+          ln -sf /opt/cmake/bin/cmake-gui /usr/local/bin/cmake-gui || true
+          ln -sf /opt/cmake/bin/ccmake /usr/local/bin/ccmake || true
+          cmake --version
 
       - name: Patch sudo as no-op (GCC)
         if: matrix.c_compiler == 'gcc'
