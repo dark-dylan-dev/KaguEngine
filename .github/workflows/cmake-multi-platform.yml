@@ -93,8 +93,11 @@ jobs:
       - name: Check GCC 15.1.0-8 modules
         if: matrix.c_compiler == 'gcc'
         run: |
+          echo '{"version":1,"revision":1,"modules":[{"logical-name":"std","source-path":"bits/std.cc","is-std-library":true},{"logical-name":"std.compat","source-path":"bits/std.compat.cc","is-std-library":true}]}' > /usr/include/c++/15/libstdc++.modules.json
+          sudo chmod 644 /usr/include/c++/15/libstdc++.modules.json
           find /usr/include/c++/15/ -name '*.cc'
           find /usr/include/c++/15/ -name '*.json'
+          find /usr/include/c++/15/ -name '*.modules.json'
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
