@@ -95,8 +95,8 @@ jobs:
         run: |
           echo '{"version":1,"revision":1,"modules":[{"logical-name":"std","source-path":"bits/std.cc","is-std-library":true},{"logical-name":"std.compat","source-path":"bits/std.compat.cc","is-std-library":true}]}' | sudo tee /usr/include/c++/15/libstdc++.modules.json > /dev/null
           sudo chmod 644 /usr/include/c++/15/libstdc++.modules.json
-          g++-15 -std=c++23 -fmodules-ts -xc++-system-header /usr/include/c++/15/bits/std.cc -c
-          g++-15 -std=c++23 -fmodules-ts -xc++-system-header /usr/include/c++/15/bits/std.compat.cc -c
+          g++-15 -std=c++23 -fmodules-ts -c /usr/include/c++/15/bits/std.cc -fmodules-cache-path=.
+          g++-15 -std=c++23 -fmodules-ts -c /usr/include/c++/15/bits/std.compat.cc -fmodules-cache-path=.
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
