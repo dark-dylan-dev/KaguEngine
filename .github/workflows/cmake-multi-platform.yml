@@ -93,9 +93,8 @@ jobs:
       - name: Check GCC 15.1.0-8 modules
         if: matrix.c_compiler == 'gcc'
         run: |
-          find /usr/include/c++/15/ -name '*.gcm'
           find /usr/include/c++/15/ -name '*.cc'
-          g++ -std=gnu++26 -fmodules -fsearch-include-path bits/std.cc
+          find /usr/include/c++/15/ -name '*.json'
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
