@@ -49,20 +49,23 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      - name: Install system dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev \
-            libgl1-mesa-dev libc++-dev libc++abi-dev \
-            libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
-
-      - name: Check GCC version
+      - name: Check GCC version (GCC)
         if: matrix.c_compiler == 'gcc'
         run: |
           gcc --version
           g++ --version
+
+      - name: Install system dependencies (Clang)
+        if: matrix.c_compiler == 'clang'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libc++-dev libc++abi-dev libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
+
+      - name: Install system dependencies (GCC)
+        if: matrix.c_compiler == 'gcc'
+        run: |
+          apt-get update
+          apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
