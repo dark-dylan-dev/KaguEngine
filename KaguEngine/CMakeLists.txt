@@ -4,6 +4,10 @@ file(GLOB_RECURSE CPP_MODULES src/*.ixx)
 # Adding the executable
 add_executable(KaguEngine)
 
+# Enforces C++23 on the target
+target_compile_features(KaguEngine PRIVATE cxx_std_23)
+
+# Add source files & modules
 target_sources(KaguEngine PRIVATE ${CPP_SOURCES})
 target_sources(KaguEngine PRIVATE
     FILE_SET all_modules TYPE CXX_MODULES
@@ -13,14 +17,8 @@ set_target_properties(KaguEngine PROPERTIES
     CXX_SCAN_FOR_MODULES ON
 )
 
-# Adding external libraries
-add_subdirectory(extern/glfw)
-target_include_directories(KaguEngine PRIVATE extern/glfw/include)
-target_link_libraries(KaguEngine PRIVATE glfw)
-target_include_directories(KaguEngine PRIVATE extern/glm)
-target_include_directories(KaguEngine PRIVATE extern/stb)
-target_include_directories(KaguEngine PRIVATE extern/tinyobjloader)
-target_include_directories(KaguEngine PRIVATE extern/ImGuiFork)
+# Third-party
+add_subdirectory(extern)
 
 # Adding Vulkan
 find_package(Vulkan REQUIRED)
@@ -30,15 +28,6 @@ endif()
 
 target_include_directories(KaguEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(KaguEngine PRIVATE Vulkan::Vulkan)
-
-# Enforces C++23 on the target
-target_compile_features(KaguEngine PRIVATE cxx_std_23)
-
-# Set default build type to Release if not specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
-    message(STATUS "No build type specified, defaulting to Release")
-endif()
 
 # Linker options (to disable console window in Release build)
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")

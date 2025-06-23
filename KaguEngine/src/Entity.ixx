@@ -45,6 +45,7 @@ public:
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
     Entity(Entity &&other) noexcept {
+        name       = other.name;
         m_Id       = other.m_Id;
         color      = other.color;
         transform  = other.transform;
@@ -57,6 +58,7 @@ public:
 
     [[nodiscard]] id_t getId() const { return m_Id; }
 
+    std::string name;
     glm::vec3 color{};
     TransformComponent transform{};
 
