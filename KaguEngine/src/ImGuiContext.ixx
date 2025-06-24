@@ -29,28 +29,34 @@ public:
     );
     ~ImGuiContext();
 
-    void recreateSwapChain() const;
+    static void recreateSwapChain();
     void render(const Renderer& renderer);
-    void onPresent(VkCommandBuffer commandBuffer);
+
+    static void onPresent(VkCommandBuffer commandBuffer);
 
     // Specs
-    [[nodiscard]] float getDepth() const { return m_MaxDepth; }
-    [[nodiscard]] float getFovY() const { return m_FovY; }
+    [[nodiscard]] float getDepth() const { return m_MaxDepth[m_camIdx]; }
+    [[nodiscard]] float getFovY() const { return m_FovY[m_camIdx]; }
     [[nodiscard]] int getCamIdx() const { return m_camIdx; }
 
 private:
+    // Setup part
+    static void setupConfigFlags();
+    static void setupStyle();
+    static void setAppTheme();
+    static void setStyleVars();
     void setupContext() const;
-    void setupConfigFlags();
-    void setupStyle();
-    void beginRender();
+    static void initializeDockspace(const ImGuiID& dockspace_id, const ImGuiViewport* viewport);
+    // Rendering part
+    static void beginRender();
     void onRender(const Renderer& renderer);
-    ImGuiViewport* setupViewport();
-    ImGuiID setDockspaceID();
-    void initializeDockspace(const ImGuiID& dockspace_id, const ImGuiViewport* viewport);
-    void render3DScene(const Renderer& renderer);
-    void moveSceneEntities();
+    static ImGuiViewport* setupViewport();
+    static ImGuiID setDockspaceID();
+    static void drawMainMenuBar();
+    static void render3DScene(const Renderer& renderer);
+    void moveSceneEntities() const;
     void renderSceneSpecs();
-    void endRender();
+    static void endRender();
 
     std::unique_ptr<DescriptorPool> &poolRef;
     std::vector<Entity> &viewsRef;
@@ -61,8 +67,8 @@ private:
     Window &windowRef;
 
     // Specs
-    float m_MaxDepth = 100.f;
-    float m_FovY = 50.f;
+    std::vector<float> m_MaxDepth = { 100.f, 100.f };
+    std::vector<float> m_FovY = { 50.f, 50.f };
     int m_camIdx = 0;
 };
 
