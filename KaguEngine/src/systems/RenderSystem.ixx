@@ -20,26 +20,26 @@ import KaguEngine.Pipeline;
 
 export namespace KaguEngine {
 
-class RenderSystem {
-public:
-    RenderSystem(Device &device, VkRenderPass renderPass,
-                   VkDescriptorSetLayout globalSetLayout,
-                   VkDescriptorSetLayout materialSetLayout);
-    ~RenderSystem();
+    class RenderSystem {
+    public:
+        RenderSystem(Device &device, VkFormat colorFormat, VkFormat depthFormat,
+                       VkDescriptorSetLayout globalSetLayout,
+                       VkDescriptorSetLayout materialSetLayout);
+        ~RenderSystem();
 
-    RenderSystem(const RenderSystem &) = delete;
-    RenderSystem &operator=(const RenderSystem &) = delete;
+        RenderSystem(const RenderSystem &) = delete;
+        RenderSystem &operator=(const RenderSystem &) = delete;
 
-    void renderGameObjects(const FrameInfo &frameInfo) const;
+        void renderGameObjects(const FrameInfo &frameInfo) const;
 
-private:
-    void createPipelineLayout(VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout materialSetLayout);
-    void createPipeline(VkRenderPass renderPass);
+    private:
+        void createPipelineLayout(VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout materialSetLayout);
+        void createPipeline(VkFormat colorFormat, VkFormat depthFormat);
 
-    Device &m_Device;
+        Device &m_Device;
 
-    std::unique_ptr<Pipeline> m_Pipeline;
-    VkPipelineLayout m_pipelineLayout;
-};
+        std::unique_ptr<Pipeline> m_Pipeline;
+        VkPipelineLayout m_pipelineLayout;
+    };
 
 } // Namespace KaguEngine

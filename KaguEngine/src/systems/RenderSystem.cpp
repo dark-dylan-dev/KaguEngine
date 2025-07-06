@@ -28,13 +28,14 @@ struct SimplePushConstantData {
 
 RenderSystem::RenderSystem(
     Device &device,
-    const VkRenderPass renderPass,
+    const VkFormat colorFormat,
+    const VkFormat depthFormat,
     const VkDescriptorSetLayout globalSetLayout,
     const VkDescriptorSetLayout materialSetLayout
 ) : m_Device{device}
 {
     createPipelineLayout(globalSetLayout, materialSetLayout);
-    createPipeline(renderPass);
+    createPipeline(colorFormat, depthFormat);
 }
 
 RenderSystem::~RenderSystem() {
@@ -65,15 +66,18 @@ void RenderSystem::createPipelineLayout(const VkDescriptorSetLayout globalSetLay
     }
 }
 
-void RenderSystem::createPipeline(const VkRenderPass renderPass) {
+void RenderSystem::createPipeline(const VkFormat colorFormat, const VkFormat depthFormat) {
     assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     Pipeline::enableAlphaBlending(pipelineConfig);
     Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
-    pipelineConfig.renderPass = renderPass;
+
     pipelineConfig.pipelineLayout = m_pipelineLayout;
+    pipelineConfig.colorAttachmentFormat = colorFormat;
+    pipelineConfig.depthAttachmentFormat = depthFormat;
+
     m_Pipeline = std::make_unique<Pipeline>(
         m_Device,
         "assets/shaders/simple_shader.vert.spv",

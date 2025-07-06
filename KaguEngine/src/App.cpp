@@ -51,13 +51,15 @@ void App::run() {
 
     RenderSystem renderSystem{
         m_Device,
-        m_Renderer.getSwapChainRenderPass(),
+        m_Renderer.getOffscreenFormat(),
+        m_Renderer.getOffscreenDepthFormat(),
         m_GlobalSetLayout->getDescriptorSetLayout(),    // set = 0 (UBO)
         m_MaterialSetLayout->getDescriptorSetLayout()   // set = 1 (textures)
     };
     PointLightSystem pointLightSystem{
         m_Device,
-        m_Renderer.getSwapChainRenderPass(),
+        m_Renderer.getOffscreenFormat(),
+        m_Renderer.getOffscreenDepthFormat(),
         m_GlobalSetLayout->getDescriptorSetLayout()
     };
     Camera camera{};
@@ -118,7 +120,7 @@ void App::run() {
             m_Renderer.endOffscreenRenderPass(commandBuffer);
 
             // ImGui rendering
-            m_Renderer.transitionOffscreenImageForImGui();
+            m_Renderer.transitionOffscreenImageForImGui(commandBuffer);
             imGuiContext.render(m_Renderer);
 
             // Present the image
@@ -200,6 +202,7 @@ void App::loadGameObjects() {
     for (int i = 0; i < lightColors.size(); i++) {
         auto pointLight = Entity::makePointLight(0.2f);
         pointLight.color = lightColors[i];
+        pointLight.name = "Point Light " + std::to_string(i + 1);
         auto rotateLight = glm::rotate(
             glm::mat4(1.f),
             static_cast<float>(i) * glm::two_pi<float>() / static_cast<float>(lightColors.size()),

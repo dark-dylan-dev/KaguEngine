@@ -49,8 +49,6 @@ void Pipeline::createGraphicsPipeline(const std::string &vertFilepath, const std
                                       const PipelineConfigInfo &configInfo) {
     assert(configInfo.pipelineLayout != VK_NULL_HANDLE &&
     "Cannot create graphics pipeline: no pipelineLayout provided in configInfo");
-    assert(configInfo.renderPass != VK_NULL_HANDLE &&
-           "Cannot create graphics pipeline: no renderPass provided in configInfo");
 
     const auto vertCode = readFile(vertFilepath);
     const auto fragCode = readFile(fragFilepath);
@@ -83,8 +81,16 @@ void Pipeline::createGraphicsPipeline(const std::string &vertFilepath, const std
     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
     vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 
+    VkPipelineRenderingCreateInfo renderingCreateInfo{};
+    renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+    renderingCreateInfo.colorAttachmentCount = 1;
+    renderingCreateInfo.pColorAttachmentFormats = &configInfo.colorAttachmentFormat;
+    renderingCreateInfo.depthAttachmentFormat = configInfo.depthAttachmentFormat;
+    renderingCreateInfo.stencilAttachmentFormat = configInfo.depthAttachmentFormat;
+
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.pNext = &renderingCreateInfo;
     pipelineInfo.stageCount = 2;
     pipelineInfo.pStages = shaderStages;
     pipelineInfo.pVertexInputState = &vertexInputInfo;
@@ -97,8 +103,8 @@ void Pipeline::createGraphicsPipeline(const std::string &vertFilepath, const std
     pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
 
     pipelineInfo.layout = configInfo.pipelineLayout;
-    pipelineInfo.renderPass = configInfo.renderPass;
-    pipelineInfo.subpass = configInfo.subpass;
+    pipelineInfo.renderPass = VK_NULL_HANDLE;
+    pipelineInfo.subpass = 0;
 
     pipelineInfo.basePipelineIndex = -1;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;

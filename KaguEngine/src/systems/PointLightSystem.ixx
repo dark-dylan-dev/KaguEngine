@@ -1,11 +1,6 @@
 module;
 
 // libs
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 
 export module KaguEngine.System.PointLight;
@@ -22,7 +17,7 @@ export namespace KaguEngine {
 
 class PointLightSystem {
 public:
-    PointLightSystem(Device &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+    PointLightSystem(Device &device, VkFormat colorFormat, VkFormat depthFormat, VkDescriptorSetLayout globalSetLayout);
     ~PointLightSystem();
 
     PointLightSystem(const PointLightSystem &) = delete;
@@ -33,7 +28,7 @@ public:
 
 private:
     void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
-    void createPipeline(VkRenderPass renderPass);
+    void createPipeline(VkFormat colorFormat, VkFormat depthFormat);
 
     Device &m_Device;
 

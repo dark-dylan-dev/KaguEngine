@@ -29,8 +29,8 @@ struct PipelineConfigInfo {
     std::vector<VkDynamicState> dynamicStateEnables;
     VkPipelineDynamicStateCreateInfo dynamicStateInfo;
     VkPipelineLayout pipelineLayout = nullptr;
-    VkRenderPass renderPass = nullptr;
-    uint32_t subpass = 0;
+    VkFormat colorAttachmentFormat;
+    VkFormat depthAttachmentFormat;
 };
 
 class Pipeline {

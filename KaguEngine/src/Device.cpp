@@ -77,7 +77,7 @@ void Device::createInstance() {
     appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
     appInfo.pEngineName = "Kagu Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -139,9 +139,14 @@ void Device::pickPhysicalDevice() {
 
 int Device::rateDeviceSuitability(const VkPhysicalDevice device) const {
     VkPhysicalDeviceProperties supportedProperties;
-    VkPhysicalDeviceFeatures supportedFeatures;
     vkGetPhysicalDeviceProperties(device, &supportedProperties);
-    vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+    VkPhysicalDeviceVulkan13Features features13{};
+    features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+    VkPhysicalDeviceFeatures2 features2{};
+    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features2.pNext = &features13;
+    vkGetPhysicalDeviceFeatures2(device, &features2);
 
     const QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -161,7 +166,7 @@ int Device::rateDeviceSuitability(const VkPhysicalDevice device) const {
 
     // Check for needed features, the engine can't work without them.
     if (!(indices.isComplete() && extensionsSupported && swapChainAdequate &&
-        supportedFeatures.geometryShader && supportedFeatures.samplerAnisotropy)) {
+        features2.features.samplerAnisotropy && features13.dynamicRendering)) {
         return 0;
     }
 
@@ -184,16 +189,23 @@ void Device::createLogicalDevice() {
         queueCreateInfos.push_back(queueCreateInfo);
     }
 
-    VkPhysicalDeviceFeatures deviceFeatures = {};
-    deviceFeatures.samplerAnisotropy = VK_TRUE;
+    VkPhysicalDeviceVulkan13Features deviceFeatures13{};
+    deviceFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+    deviceFeatures13.dynamicRendering = VK_TRUE;
+
+    VkPhysicalDeviceFeatures2 deviceFeatures2{};
+    deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    deviceFeatures2.pNext = &deviceFeatures13;
+    deviceFeatures2.features.samplerAnisotropy = VK_TRUE;
 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.pNext = &deviceFeatures2;
 
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
-    createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.pEnabledFeatures = nullptr; // This must be null if pNext is used
     createInfo.enabledExtensionCount = static_cast<uint32_t>(m_DeviceExtensions.size());
     createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
 

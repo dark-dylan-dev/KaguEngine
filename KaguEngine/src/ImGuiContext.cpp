@@ -154,7 +154,6 @@ void ImGuiContext::setupContext() const {
     init_info.Device = deviceRef.device();
     init_info.QueueFamily = indices.graphicsFamily;
     init_info.Queue = deviceRef.graphicsQueue();
-    init_info.RenderPass = swapChainRef.getRenderPass();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = poolRef->getDescriptorPool();
     init_info.Allocator = nullptr;
@@ -162,6 +161,7 @@ void ImGuiContext::setupContext() const {
     init_info.MinImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
     init_info.MSAASamples = deviceRef.getSampleCount();
     init_info.ImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
+    init_info.UseDynamicRendering = true;
     ImGui_ImplVulkan_Init(&init_info);
     ImGui_ImplVulkan_CreateFontsTexture();
 }
@@ -366,7 +366,8 @@ void ImGuiContext::renderSceneHierarchyPanel() {
 
     if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen)) {
         for (auto& [id, entity] : entitiesRef) {
-            std::string name = entity.pointLight != nullptr ? std::string(ICON_FA_LIGHTBULB_O) + " Point Light " + std::to_string(id) : std::string(ICON_FA_CUBE) + " " + entity.name;
+            std::string name = entity.pointLight != nullptr ? std::string(ICON_FA_LIGHTBULB_O) + " " : std::string(ICON_FA_CUBE) + " ";
+            name += entity.name;
 
             bool is_selected = (m_SelectedEntityID == id);
             if (ImGui::Selectable(name.c_str(), is_selected)) {
