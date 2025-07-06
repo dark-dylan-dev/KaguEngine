@@ -72,14 +72,15 @@ void App::run() {
     views.emplace_back(std::move(viewerObject));
     views.emplace_back(std::move(otherView));
 
+    glm::vec4 ambientLightColor = { 0.2f, 0.2f, 0.2f, 1.0f };
     ImGuiContext imGuiContext(
         m_Window, *m_Renderer.getSwapChain(), m_Device,
         m_DescriptorPool,
-        m_SceneEntities, views, camera
+        m_SceneEntities, views, camera, ambientLightColor
     );
 
     auto currentTime = std::chrono::high_resolution_clock::now();
-    while (!m_Window.shouldClose()) {
+    while (!m_Window.shouldClose() && m_IsRunning) {
         KeyboardMovementController cameraController{};
         glfwPollEvents();
 
@@ -87,11 +88,11 @@ void App::run() {
         float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
         currentTime = newTime;
 
-        cameraController.moveInPlaneXZ(m_Window.getGLFWwindow(), frameTime, views[imGuiContext.getCamIdx()]);
-        camera.setViewYXZ(views[imGuiContext.getCamIdx()].transform.translation, views[imGuiContext.getCamIdx()].transform.rotation);
+        cameraController.moveInPlaneXZ(m_Window.getGLFWwindow(), frameTime, imGuiContext.getView());
+        camera.setViewYXZ(imGuiContext.getView().transform.translation, imGuiContext.getView().transform.rotation);
 
         float aspect = m_Renderer.getAspectRatio();
-        camera.setPerspectiveProjection(glm::radians(imGuiContext.getFovY()), aspect, 0.1f, imGuiContext.getDepth());
+        camera.setPerspectiveProjection(imGuiContext.getFovY(), aspect, 0.1f, imGuiContext.getDepth());
 
         if (auto commandBuffer = m_Renderer.beginFrame()) {
             int frameIndex = m_Renderer.getFrameIndex();
@@ -104,6 +105,7 @@ void App::run() {
             ubo.projection = camera.getProjection();
             ubo.view = camera.getView();
             ubo.inverseView = camera.getInverseView();
+            ubo.ambientLightColor = imGuiContext.getAmbientLightColor();
             PointLightSystem::update(frameInfo, ubo);
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             if(uboBuffers[frameIndex]->flush() != VK_SUCCESS)
@@ -121,11 +123,12 @@ void App::run() {
 
             // Present the image
             m_Renderer.beginSwapChainRenderPass(commandBuffer);
-            imGuiContext.onPresent(commandBuffer);
+            ImGuiContext::onPresent(commandBuffer);
             m_Renderer.endSwapChainRenderPass(commandBuffer);
 
             m_Renderer.endFrame();
         }
+        m_IsRunning = imGuiContext.isRunning();
     }
 
     vkDeviceWaitIdle(m_Device.device());

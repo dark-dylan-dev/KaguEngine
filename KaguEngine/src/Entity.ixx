@@ -23,6 +23,7 @@ struct TransformComponent {
     // https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
     [[nodiscard]] glm::mat4 mat4() const;
     [[nodiscard]] glm::mat3 normalMatrix() const;
+    float alpha = 1.0f;
 };
 
 struct PointLightComponent {

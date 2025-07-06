@@ -56,6 +56,7 @@ public:
 
 private:
     void loadGameObjects();
+    bool m_IsRunning = true;
 
     Window m_Window{WIDTH, HEIGHT, "Kagu Engine"};
     Device m_Device{m_Window};

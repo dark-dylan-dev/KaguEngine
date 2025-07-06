@@ -75,7 +75,7 @@ private:
     VkDescriptorPool m_offscreenDescriptorPool = VK_NULL_HANDLE;
     VkImageLayout m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkDescriptorSetLayout m_offscreenDescriptorSetLayout = VK_NULL_HANDLE;
-    VkFormat m_offscreenFormat = VK_FORMAT_B8G8R8A8_SRGB;
+    VkFormat m_offscreenFormat = VK_FORMAT_B8G8R8A8_UNORM;
     VkExtent2D m_offscreenExtent{};
 
     // Multi sampled color image
@@ -97,7 +97,7 @@ private:
     void createOffscreenRenderPass();
     void createOffscreenFramebuffer();
     void createOffscreenDescriptorSet();
-    void transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) const;
 };
 
 } // Namespace KaguEngine

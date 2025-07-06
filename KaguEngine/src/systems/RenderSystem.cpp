@@ -23,6 +23,7 @@ namespace KaguEngine {
 struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f};
     glm::mat4 normalMatrix{1.f};
+    float modelAlpha{1.f};
 };
 
 RenderSystem::RenderSystem(
@@ -98,6 +99,7 @@ void RenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
         SimplePushConstantData push{};
         push.modelMatrix = obj.transform.mat4();
         push.normalMatrix = obj.transform.normalMatrix();
+        push.modelAlpha = obj.transform.alpha;
 
         vkCmdPushConstants(frameInfo.commandBuffer, m_pipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,

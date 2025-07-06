@@ -26,7 +26,12 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 layout(push_constant) uniform Push {
     mat4 modelMatrix;
     mat4 normalMatrix;
+    float modelAlpha;
 } push;
+
+vec3 srgbToLinear(vec3 srgb) {
+    return pow(srgb, vec3(1.0/2.2));
+}
 
 void main() {
     vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
@@ -56,7 +61,7 @@ void main() {
         blinnTerm = pow(blinnTerm, 512.0); // higher values -> sharper highlight
         specularLight += intensity * blinnTerm;
     }
-  
-    sourceColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
-    outColor = vec4(sourceColor.rgb * texture(texSampler, fragTexCoord).rgb, 1.0);
+    sourceColor = vec4(diffuseLight * fragColor + specularLight * fragColor, push.modelAlpha);
+    vec4 texColor = vec4(srgbToLinear(texture(texSampler, fragTexCoord).rgb), 1.0);
+    outColor = vec4(sourceColor * texColor);
 }
