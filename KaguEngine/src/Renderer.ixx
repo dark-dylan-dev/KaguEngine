@@ -25,7 +25,6 @@ public:
     Renderer(const Renderer &) = delete;
     Renderer &operator=(const Renderer &) = delete;
 
-    [[nodiscard]] VkRenderPass getSwapChainRenderPass() const { return m_SwapChain->getRenderPass(); }
     [[nodiscard]] float getAspectRatio() const { return m_SwapChain->extentAspectRatio(); }
     [[nodiscard]] bool isFrameInProgress() const { return m_isFrameStarted; }
 
@@ -47,10 +46,12 @@ public:
     // Off screen render pass
     void beginOffscreenRenderPass(VkCommandBuffer commandBuffer);
     void endOffscreenRenderPass(VkCommandBuffer commandBuffer) const;
-    void transitionOffscreenImageForImGui();
+    void transitionOffscreenImageForImGui(VkCommandBuffer commandBuffer);
 
     [[nodiscard]] VkDescriptorSet getOffscreenImGuiDescriptorSet() const { return m_offscreenImGuiDescriptorSet; }
     [[nodiscard]] VkExtent2D getOffscreenExtent() const { return m_offscreenExtent; }
+    [[nodiscard]] VkFormat getOffscreenFormat() const { return m_offscreenFormat; }
+    [[nodiscard]] VkFormat getOffscreenDepthFormat() const { return m_offscreenDepthFormat; }
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
 
@@ -68,15 +69,14 @@ private:
     int m_currentFrameIndex{0};
     bool m_isFrameStarted{false};
 
-    VkFramebuffer m_offscreenFramebuffer = VK_NULL_HANDLE;
-    VkRenderPass m_offscreenRenderPass = VK_NULL_HANDLE;
-    VkSampler m_offscreenSampler = VK_NULL_HANDLE;
     VkDescriptorSet m_offscreenImGuiDescriptorSet = VK_NULL_HANDLE;
     VkDescriptorPool m_offscreenDescriptorPool = VK_NULL_HANDLE;
     VkImageLayout m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkDescriptorSetLayout m_offscreenDescriptorSetLayout = VK_NULL_HANDLE;
     VkFormat m_offscreenFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    VkFormat m_offscreenDepthFormat;
     VkExtent2D m_offscreenExtent{};
+    VkSampler m_offscreenSampler = VK_NULL_HANDLE;
 
     // Multi sampled color image
     VkImage m_offscreenImage = VK_NULL_HANDLE;
@@ -94,10 +94,7 @@ private:
 
     void createOffscreenResources();
     void cleanupOffscreenResources();
-    void createOffscreenRenderPass();
-    void createOffscreenFramebuffer();
     void createOffscreenDescriptorSet();
-    void transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) const;
 };
 
 } // Namespace KaguEngine

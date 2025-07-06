@@ -26,10 +26,10 @@ struct PointLightPushConstants {
     float radius;
 };
 
-PointLightSystem::PointLightSystem(Device &device, const VkRenderPass renderPass,
+PointLightSystem::PointLightSystem(Device &device, const VkFormat colorFormat, const VkFormat depthFormat,
                                    const VkDescriptorSetLayout globalSetLayout) : m_Device{device} {
     createPipelineLayout(globalSetLayout);
-    createPipeline(renderPass);
+    createPipeline(colorFormat, depthFormat);
 }
 
 PointLightSystem::~PointLightSystem() {
@@ -55,7 +55,7 @@ void PointLightSystem::createPipelineLayout(const VkDescriptorSetLayout globalSe
     }
 }
 
-void PointLightSystem::createPipeline(const VkRenderPass renderPass) {
+void PointLightSystem::createPipeline(const VkFormat colorFormat, const VkFormat depthFormat) {
     assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
     PipelineConfigInfo pipelineConfig{};
@@ -64,8 +64,10 @@ void PointLightSystem::createPipeline(const VkRenderPass renderPass) {
     Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
     pipelineConfig.attributeDescriptions.clear();
     pipelineConfig.bindingDescriptions.clear();
-    pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = m_pipelineLayout;
+    pipelineConfig.colorAttachmentFormat = colorFormat;
+    pipelineConfig.depthAttachmentFormat = depthFormat;
+
     m_Pipeline = std::make_unique<Pipeline>(m_Device,
         "assets/shaders/point_light.vert.spv",
         "assets/shaders/point_light.frag.spv", pipelineConfig);

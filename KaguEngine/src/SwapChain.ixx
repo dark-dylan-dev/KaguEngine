@@ -24,9 +24,10 @@ public:
     SwapChain(const SwapChain &) = delete;
     SwapChain &operator=(const SwapChain &) = delete;
 
-    [[nodiscard]] VkFramebuffer getFrameBuffer(const int index) const { return m_SwapChainFramebuffers[index]; }
-    [[nodiscard]] VkRenderPass getRenderPass() const                  { return m_RenderPass; }
     [[nodiscard]] VkImageView getImageView(const int index) const     { return m_SwapChainImageViews[index]; }
+    [[nodiscard]] VkImage getImage(const int index) const             { return m_SwapChainImages[index]; }
+    [[nodiscard]] VkImageView getDepthImageView(const int index) const { return m_DepthImageViews[index]; }
+    [[nodiscard]] VkImageView getMultisampleColorImageView(const int index) const { return m_MultisampleColorImageViews[index]; }
     [[nodiscard]] size_t imageCount() const                           { return m_SwapChainImages.size(); }
     [[nodiscard]] VkFormat getSwapChainImageFormat() const            { return m_SwapChainImageFormat; }
     [[nodiscard]] VkExtent2D getSwapChainExtent() const               { return m_SwapChainExtent; }
@@ -53,8 +54,6 @@ private:
     void createImageViews();
     void createDepthResources();
     void createColorResources();
-    void createRenderPass();
-    void createFramebuffers();
     void createSyncObjects();
 
     // Helper functions
@@ -66,9 +65,6 @@ private:
     VkFormat m_SwapChainImageFormat;
     VkFormat m_SwapChainDepthFormat;
     VkExtent2D m_SwapChainExtent;
-
-    std::vector<VkFramebuffer> m_SwapChainFramebuffers;
-    VkRenderPass m_RenderPass;
 
     std::vector<VkImage> m_DepthImages;
     std::vector<VkDeviceMemory> m_DepthImageMemories;
