@@ -433,7 +433,7 @@ void SwapChain::createSyncObjects() {
 VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
     for (const auto &availableFormat: availableFormats) {
         // availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM for ImGui looking right
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
             availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
         }
@@ -446,7 +446,6 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     for (const auto &availablePresentMode: availablePresentModes) {
         // Lower latency, but frames might be dropped
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            //std::cout << "Present mode : Mailbox" << '\n';
             return availablePresentMode;
         }
     }
@@ -454,13 +453,11 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     for (const auto &availablePresentMode : availablePresentModes) {
         // V-Sync off
         if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-          //std::cout << "Present mode: Immediate" << '\n';
           return availablePresentMode;
         }
     }
 
     // No frames dropped, higher latency
-    //std::cout << "Present mode: V-Sync" << '\n';
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 

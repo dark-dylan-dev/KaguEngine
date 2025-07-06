@@ -18,8 +18,8 @@ export namespace KaguEngine {
 
 class App {
 public:
-    static constexpr int WIDTH = 800;
-    static constexpr int HEIGHT = 600;
+    static constexpr int WIDTH = 1600;
+    static constexpr int HEIGHT = 900;
 
     App() {
         m_GlobalSetLayout = DescriptorSetLayout::Builder(m_Device)
@@ -56,6 +56,7 @@ public:
 
 private:
     void loadGameObjects();
+    bool m_IsRunning = true;
 
     Window m_Window{WIDTH, HEIGHT, "Kagu Engine"};
     Device m_Device{m_Window};

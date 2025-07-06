@@ -32,7 +32,10 @@ void Window::initWindow() {
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_DECORATED, GLFW_TRUE); // GLFW_FALSE when GUI
 
-    m_Window = glfwCreateWindow(mode->width / 2, mode->height / 2, m_WindowName.c_str(), nullptr, nullptr);
+    int width, height;
+    setWindowDimensions(mode, width, height);
+
+    m_Window = glfwCreateWindow(width, height, m_WindowName.c_str(), nullptr, nullptr);
     centerWindow(m_Window, monitor);
     glfwSetWindowUserPointer(m_Window, this);
     glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
@@ -41,6 +44,21 @@ void Window::initWindow() {
 void Window::createWindowSurface(const VkInstance instance, VkSurfaceKHR* surface) const {
     if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create window surface");
+    }
+}
+
+void Window::setWindowDimensions(const GLFWvidmode* mode, int& width, int& height) {
+    if (mode->height < 900) {
+        height = mode->height / 2;
+    }
+    else {
+        height = m_Height;
+    }
+    if (mode->width < m_Width) {
+        width = mode->width / 2;
+    }
+    else {
+        width = m_Width;
     }
 }
 

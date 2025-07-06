@@ -60,14 +60,27 @@ void App::run() {
         m_Renderer.getSwapChainRenderPass(),
         m_GlobalSetLayout->getDescriptorSetLayout()
     };
-    ImGuiContext imGuiContext(m_Window, *m_Renderer.getSwapChain(), m_Device, m_DescriptorPool);
     Camera camera{};
 
+    std::vector<Entity> views;
+    views.reserve(2);
+
     auto viewerObject = Entity::createEntity();
+    auto otherView = Entity::createEntity();
     viewerObject.transform.translation = {0.f, -0.5f, -3.f};
+    otherView.transform.translation = {0.f, -1.f, -5.f};
+    views.emplace_back(std::move(viewerObject));
+    views.emplace_back(std::move(otherView));
+
+    glm::vec4 ambientLightColor = { 0.2f, 0.2f, 0.2f, 1.0f };
+    ImGuiContext imGuiContext(
+        m_Window, *m_Renderer.getSwapChain(), m_Device,
+        m_DescriptorPool,
+        m_SceneEntities, views, camera, ambientLightColor
+    );
 
     auto currentTime = std::chrono::high_resolution_clock::now();
-    while (!m_Window.shouldClose()) {
+    while (!m_Window.shouldClose() && m_IsRunning) {
         KeyboardMovementController cameraController{};
         glfwPollEvents();
 
@@ -75,11 +88,11 @@ void App::run() {
         float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
         currentTime = newTime;
 
-        cameraController.moveInPlaneXZ(m_Window.getGLFWwindow(), frameTime, viewerObject);
-        camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+        cameraController.moveInPlaneXZ(m_Window.getGLFWwindow(), frameTime, imGuiContext.getView());
+        camera.setViewYXZ(imGuiContext.getView().transform.translation, imGuiContext.getView().transform.rotation);
 
         float aspect = m_Renderer.getAspectRatio();
-        camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
+        camera.setPerspectiveProjection(imGuiContext.getFovY(), aspect, 0.1f, imGuiContext.getDepth());
 
         if (auto commandBuffer = m_Renderer.beginFrame()) {
             int frameIndex = m_Renderer.getFrameIndex();
@@ -92,6 +105,7 @@ void App::run() {
             ubo.projection = camera.getProjection();
             ubo.view = camera.getView();
             ubo.inverseView = camera.getInverseView();
+            ubo.ambientLightColor = imGuiContext.getAmbientLightColor();
             PointLightSystem::update(frameInfo, ubo);
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             if(uboBuffers[frameIndex]->flush() != VK_SUCCESS)
@@ -109,11 +123,12 @@ void App::run() {
 
             // Present the image
             m_Renderer.beginSwapChainRenderPass(commandBuffer);
-            imGuiContext.onPresent(commandBuffer);
+            ImGuiContext::onPresent(commandBuffer);
             m_Renderer.endSwapChainRenderPass(commandBuffer);
 
             m_Renderer.endFrame();
         }
+        m_IsRunning = imGuiContext.isRunning();
     }
 
     vkDeviceWaitIdle(m_Device.device());
@@ -130,6 +145,7 @@ void App::loadGameObjects() {
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/obamium_model.obj");
 
     auto centralObamium = Entity::createEntity();
+    centralObamium.name = "Obamium";
     centralObamium.model = loadedModel;
     centralObamium.texture = std::move(obamiumTexture);
     centralObamium.material = centralObamium.texture->getMaterial();
@@ -146,6 +162,7 @@ void App::loadGameObjects() {
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/viking_room.obj");
 
     auto vikingRoom = Entity::createEntity();
+    vikingRoom.name = "Viking Room";
     vikingRoom.model = loadedModel;
     vikingRoom.texture = std::move(vikingRoomTexture);
     vikingRoom.material = vikingRoom.texture->getMaterial();
@@ -163,6 +180,7 @@ void App::loadGameObjects() {
     );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/base.obj");
     auto floor = Entity::createEntity();
+    floor.name = "Base";
     floor.model = loadedModel;
     floor.texture = std::move(dummyTexture);
     floor.material = floor.texture->getMaterial();

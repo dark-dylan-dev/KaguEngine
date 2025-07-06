@@ -23,6 +23,7 @@ struct TransformComponent {
     // https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
     [[nodiscard]] glm::mat4 mat4() const;
     [[nodiscard]] glm::mat3 normalMatrix() const;
+    float alpha = 1.0f;
 };
 
 struct PointLightComponent {
@@ -45,6 +46,7 @@ public:
     Entity(const Entity &) = delete;
     Entity &operator=(const Entity &) = delete;
     Entity(Entity &&other) noexcept {
+        name       = other.name;
         m_Id       = other.m_Id;
         color      = other.color;
         transform  = other.transform;
@@ -57,6 +59,7 @@ public:
 
     [[nodiscard]] id_t getId() const { return m_Id; }
 
+    std::string name;
     glm::vec3 color{};
     TransformComponent transform{};
 

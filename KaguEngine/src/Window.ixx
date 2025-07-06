@@ -33,6 +33,7 @@ public:
 private:
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
     void initWindow();
+    void setWindowDimensions(const GLFWvidmode* mode, int& width, int& height);
     void centerWindow(GLFWwindow *window, GLFWmonitor *monitor);
 
     int m_Width;

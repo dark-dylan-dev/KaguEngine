@@ -159,7 +159,7 @@ DescriptorWriter &DescriptorWriter::writeImage(const uint32_t binding, const VkD
 }
 
 bool DescriptorWriter::build(VkDescriptorSet &set) {
-    if (const bool success = poolRef.allocateDescriptor(setLayoutRef.getDescriptorSetLayout(), set); !success) {
+    if (!poolRef.allocateDescriptor(setLayoutRef.getDescriptorSetLayout(), set)) {
         return false;
     }
     overwrite(set);

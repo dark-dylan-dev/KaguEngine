@@ -158,7 +158,7 @@ void Renderer::createOffscreenResources() {
     cleanupOffscreenResources();
 
     m_offscreenExtent = m_SwapChain->getSwapChainExtent();
-    m_offscreenFormat = VK_FORMAT_B8G8R8A8_SRGB;
+    m_offscreenFormat = VK_FORMAT_B8G8R8A8_UNORM;
 
     // Create color attachment
     VkImageCreateInfo createInfo{};
@@ -528,7 +528,7 @@ void Renderer::transitionOffscreenImageForImGui() {
     }
 }
 
-void Renderer::transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void Renderer::transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) const {
     VkCommandBuffer commandBuffer = deviceRef.beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier{};
