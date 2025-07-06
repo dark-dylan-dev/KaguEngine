@@ -202,6 +202,7 @@ void App::loadGameObjects() {
     for (int i = 0; i < lightColors.size(); i++) {
         auto pointLight = Entity::makePointLight(0.2f);
         pointLight.color = lightColors[i];
+        pointLight.name = "Point Light " + std::to_string(i + 1);
         auto rotateLight = glm::rotate(
             glm::mat4(1.f),
             static_cast<float>(i) * glm::two_pi<float>() / static_cast<float>(lightColors.size()),

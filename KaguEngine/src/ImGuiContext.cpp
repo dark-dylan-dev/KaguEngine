@@ -366,7 +366,8 @@ void ImGuiContext::renderSceneHierarchyPanel() {
 
     if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen)) {
         for (auto& [id, entity] : entitiesRef) {
-            std::string name = entity.pointLight != nullptr ? std::string(ICON_FA_LIGHTBULB_O) + " Point Light " + std::to_string(id) : std::string(ICON_FA_CUBE) + " " + entity.name;
+            std::string name = entity.pointLight != nullptr ? std::string(ICON_FA_LIGHTBULB_O) + " " : std::string(ICON_FA_CUBE) + " ";
+            name += entity.name;
 
             bool is_selected = (m_SelectedEntityID == id);
             if (ImGui::Selectable(name.c_str(), is_selected)) {
