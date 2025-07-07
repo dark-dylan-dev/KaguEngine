@@ -44,7 +44,7 @@ public:
 
     void bind(VkCommandBuffer commandBuffer) const;
 
-    static void defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
+    static void defaultPipelineConfigInfo(PipelineConfigInfo &configInfo, bool isTextured);
     static void enableAlphaBlending(PipelineConfigInfo &configInfo);
     static void enableMSAA(PipelineConfigInfo &configInfo, const VkSampleCountFlagBits &msaaLevel);
 

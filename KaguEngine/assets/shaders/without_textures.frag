@@ -1,11 +1,8 @@
 #version 450
 
-layout (set = 1, binding = 0) uniform sampler2D texSampler;
-
 layout (location = 0) in vec3 fragColor;
 layout (location = 1) in vec3 fragPosWorld;
 layout (location = 2) in vec3 fragNormalWorld;
-layout (location = 3) in vec2 fragTexCoord;
 
 layout (location = 0) out vec4 outColor;
 
@@ -25,13 +22,9 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 
 layout(push_constant) uniform Push {
     mat4 modelMatrix;
-    mat4 normalMatrix;
+    vec3 modelColor;
     float modelAlpha;
 } push;
-
-vec3 srgbToLinear(vec3 srgb) {
-    return pow(srgb, vec3(1.0/2.2));
-}
 
 void main() {
     vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
@@ -61,7 +54,6 @@ void main() {
         blinnTerm = pow(blinnTerm, 512.0); // higher values -> sharper highlight
         specularLight += intensity * blinnTerm;
     }
-    sourceColor = vec4(diffuseLight * fragColor + specularLight * fragColor, push.modelAlpha);
-    vec4 texColor = vec4(srgbToLinear(texture(texSampler, fragTexCoord).rgb), 1.0);
-    outColor = vec4(sourceColor * texColor);
+
+    outColor = vec4(diffuseLight * push.modelColor + specularLight * push.modelColor, push.modelAlpha);
 }

@@ -148,10 +148,9 @@ void Renderer::endFrame() {
     m_currentFrameIndex = (m_currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::beginSwapChainRenderPass(const VkCommandBuffer commandBuffer) const {
-    assert(m_isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
-    assert(commandBuffer == getCurrentCommandBuffer() &&
-           "Can't begin render pass on command buffer from a different frame");
+void Renderer::beginSwapChainRendering(const VkCommandBuffer commandBuffer) const {
+    assert(m_isFrameStarted && "Can't call beginSwapChainRendering if frame is not in progress");
+    assert(commandBuffer == getCurrentCommandBuffer() && "Can't begin rendering on command buffer from a different frame");
 
     VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
     cmdTransitionImageLayout(
@@ -174,7 +173,7 @@ void Renderer::beginSwapChainRenderPass(const VkCommandBuffer commandBuffer) con
     colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.clearValue.color = {0.1f, 0.1f, 0.15f, 1.0f};
+    colorAttachment.clearValue.color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
 
     VkRenderingAttachmentInfo depthAttachment{};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -207,10 +206,9 @@ void Renderer::beginSwapChainRenderPass(const VkCommandBuffer commandBuffer) con
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void Renderer::endSwapChainRenderPass(const VkCommandBuffer commandBuffer) const {
-    assert(m_isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
-    assert(commandBuffer == getCurrentCommandBuffer() &&
-           "Can't end render pass on command buffer from a different frame");
+void Renderer::endSwapChainRendering(const VkCommandBuffer commandBuffer) const {
+    assert(m_isFrameStarted && "Can't call endSwapChainRendering if frame is not in progress");
+    assert(commandBuffer == getCurrentCommandBuffer() && "Can't end rendering on command buffer from a different frame");
 
     vkCmdEndRendering(commandBuffer);
 
@@ -463,7 +461,7 @@ void Renderer::createOffscreenDescriptorSet() {
     vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
 }
 
-void Renderer::beginOffscreenRenderPass(VkCommandBuffer commandBuffer) {
+void Renderer::beginOffscreenRendering(VkCommandBuffer commandBuffer) {
     if (m_offscreenCurrentLayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
         VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
         cmdTransitionImageLayout(
@@ -488,7 +486,7 @@ void Renderer::beginOffscreenRenderPass(VkCommandBuffer commandBuffer) {
     colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.clearValue.color = {0.1f, 0.1f, 0.15f, 1.0f};
+    colorAttachment.clearValue.color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
 
     VkRenderingAttachmentInfo depthAttachment{};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -521,7 +519,7 @@ void Renderer::beginOffscreenRenderPass(VkCommandBuffer commandBuffer) {
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void Renderer::endOffscreenRenderPass(VkCommandBuffer commandBuffer) const {
+void Renderer::endOffscreenRendering(VkCommandBuffer commandBuffer) const {
     vkCmdEndRendering(commandBuffer);
 }
 

@@ -2,6 +2,7 @@ module;
 
 // libs
 #include <vulkan/vulkan.h>
+#include <glm/vec4.hpp>
 
 // std
 #include <cassert>
@@ -40,12 +41,12 @@ public:
 
     VkCommandBuffer beginFrame();
     void endFrame();
-    void beginSwapChainRenderPass(VkCommandBuffer commandBuffer) const;
-    void endSwapChainRenderPass(VkCommandBuffer commandBuffer) const;
+    void beginSwapChainRendering(VkCommandBuffer commandBuffer) const;
+    void endSwapChainRendering(VkCommandBuffer commandBuffer) const;
 
     // Off screen render pass
-    void beginOffscreenRenderPass(VkCommandBuffer commandBuffer);
-    void endOffscreenRenderPass(VkCommandBuffer commandBuffer) const;
+    void beginOffscreenRendering(VkCommandBuffer commandBuffer);
+    void endOffscreenRendering(VkCommandBuffer commandBuffer) const;
     void transitionOffscreenImageForImGui(VkCommandBuffer commandBuffer);
 
     [[nodiscard]] VkDescriptorSet getOffscreenImGuiDescriptorSet() const { return m_offscreenImGuiDescriptorSet; }
@@ -54,6 +55,7 @@ public:
     [[nodiscard]] VkFormat getOffscreenDepthFormat() const { return m_offscreenDepthFormat; }
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
+    glm::vec4 clearColor = { 0.1f, 0.1f, 0.15f, 1.0f };
 
 private:
     void createCommandBuffers();

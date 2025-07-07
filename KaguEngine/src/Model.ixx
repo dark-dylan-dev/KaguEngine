@@ -26,7 +26,7 @@ public:
         glm::vec2 texCoord{};
 
         static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
-        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
+        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions(bool isTextured);
 
         bool operator==(const Vertex &other) const {
             return position == other.position &&

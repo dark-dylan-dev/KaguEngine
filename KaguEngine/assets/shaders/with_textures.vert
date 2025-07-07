@@ -26,14 +26,17 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 
 layout(push_constant) uniform Push {
     mat4 modelMatrix;
-    mat4 normalMatrix;
+    vec3 modelColor;
     float modelAlpha;
 } push;
 
 void main() {
     vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
     gl_Position = ubo.projection * ubo.view * positionWorld;
-    fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
+
+    mat3 normalMatrix = transpose(inverse(mat3(push.modelMatrix)));
+    fragNormalWorld = normalize(normalMatrix * normal);
+
     fragPosWorld = positionWorld.xyz;
     fragColor = inColor;
     fragTexCoord = inTexCoord;

@@ -27,7 +27,7 @@ public:
         Window &window, SwapChain &swapChain, Device &device,
         std::unique_ptr<DescriptorPool> &pool,
         Entity::Map& sceneEntities, std::vector<Entity>& views, Camera& camera,
-        glm::vec4& ambientLight
+        glm::vec4& ambientLight, glm::vec4& clearColor
     );
     ~ImGuiContext();
 
@@ -42,7 +42,8 @@ public:
     [[nodiscard]] float getFovX()                   const { return glm::radians(m_FovX[m_CamIdx]); } // Radians
     [[nodiscard]] Entity& getView()                 const { return viewsRef[m_CamIdx]; }
     [[nodiscard]] int getCamIdx()                   const { return m_CamIdx; }
-    [[nodiscard]] glm::vec4& getAmbientLightColor() const { return ambientLightColor; }
+    [[nodiscard]] glm::vec4& getAmbientLightColor() const { return ambientLightColorRef; }
+    [[nodiscard]] glm::vec4& getClearColor()        const { return clearColorRef; }
     [[nodiscard]] bool isRunning()                  const { return m_IsRunning; }
 
     // Console
@@ -77,7 +78,8 @@ private:
     Entity::id_t m_SelectedEntityID = std::numeric_limits<Entity::id_t>::max();
 
     // --- Lvalue References to Engine State ---
-    glm::vec4& ambientLightColor;
+    glm::vec4& ambientLightColorRef;
+    glm::vec4& clearColorRef;
     std::unique_ptr<DescriptorPool> &poolRef;
     std::vector<Entity> &viewsRef;
     Entity::Map &entitiesRef;
@@ -95,7 +97,7 @@ private:
     // --- Console State ---
     bool m_ConsoleOpened = true;
     char m_InputBuffer[256];
-    std::vector<std::string> m_Items = { "Welcome to Kagu Engine!", "[Info] Still in development!.", "[Hint] Select an entity in the hierarchy to see its properties." };
+    std::vector<std::string> m_Items = { "Welcome to Kagu Engine!", "[Info] Still in development!", "[Hint] Select an entity in the hierarchy to see its properties." };
 };
 
 }

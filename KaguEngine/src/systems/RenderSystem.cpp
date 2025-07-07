@@ -22,7 +22,7 @@ namespace KaguEngine {
 
 struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f};
-    glm::mat4 normalMatrix{1.f};
+    glm::vec3 modelColor{1.f};
     float modelAlpha{1.f};
 };
 
@@ -34,15 +34,39 @@ RenderSystem::RenderSystem(
     const VkDescriptorSetLayout materialSetLayout
 ) : m_Device{device}
 {
-    createPipelineLayout(globalSetLayout, materialSetLayout);
+    createPipelineNoTexturesLayout(globalSetLayout);
+    createPipelineTexturesLayout(globalSetLayout, materialSetLayout);
     createPipeline(colorFormat, depthFormat);
 }
 
 RenderSystem::~RenderSystem() {
-    vkDestroyPipelineLayout(m_Device.device(), m_pipelineLayout, nullptr);
+    vkDestroyPipelineLayout(m_Device.device(), m_pipelineTexturesLayout, nullptr);
+    vkDestroyPipelineLayout(m_Device.device(), m_pipelineNoTexturesLayout, nullptr);
 }
 
-void RenderSystem::createPipelineLayout(const VkDescriptorSetLayout globalSetLayout,
+void RenderSystem::createPipelineNoTexturesLayout(const VkDescriptorSetLayout globalSetLayout) {
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(SimplePushConstantData);
+
+    const std::vector<VkDescriptorSetLayout> descriptorSetLayouts{
+        globalSetLayout,      // set = 0
+    };
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+
+    if (vkCreatePipelineLayout(m_Device.device(), &pipelineLayoutInfo, nullptr, &m_pipelineNoTexturesLayout) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create pipeline layout!");
+    }
+}
+
+void RenderSystem::createPipelineTexturesLayout(const VkDescriptorSetLayout globalSetLayout,
                                               const VkDescriptorSetLayout materialSetLayout) {
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -61,56 +85,78 @@ void RenderSystem::createPipelineLayout(const VkDescriptorSetLayout globalSetLay
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-    if (vkCreatePipelineLayout(m_Device.device(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(m_Device.device(), &pipelineLayoutInfo, nullptr, &m_pipelineTexturesLayout) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipeline layout!");
     }
 }
 
 void RenderSystem::createPipeline(const VkFormat colorFormat, const VkFormat depthFormat) {
-    assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
+    assert(m_pipelineTexturesLayout != nullptr && "Cannot create pipeline before pipeline layout");
+    assert(m_pipelineNoTexturesLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-    PipelineConfigInfo pipelineConfig{};
-    Pipeline::defaultPipelineConfigInfo(pipelineConfig);
-    Pipeline::enableAlphaBlending(pipelineConfig);
-    Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
+    PipelineConfigInfo pipelineConfigTextures{};
+    Pipeline::defaultPipelineConfigInfo(pipelineConfigTextures, true);
+    Pipeline::enableAlphaBlending(pipelineConfigTextures);
+    Pipeline::enableMSAA(pipelineConfigTextures, m_Device.getSampleCount());
+    // ---
+    PipelineConfigInfo pipelineConfigNoTextures{};
+    Pipeline::defaultPipelineConfigInfo(pipelineConfigNoTextures, false);
+    Pipeline::enableAlphaBlending(pipelineConfigNoTextures);
+    Pipeline::enableMSAA(pipelineConfigNoTextures, m_Device.getSampleCount());
 
-    pipelineConfig.pipelineLayout = m_pipelineLayout;
-    pipelineConfig.colorAttachmentFormat = colorFormat;
-    pipelineConfig.depthAttachmentFormat = depthFormat;
+    pipelineConfigTextures.pipelineLayout = m_pipelineTexturesLayout;
+    pipelineConfigTextures.colorAttachmentFormat = colorFormat;
+    pipelineConfigTextures.depthAttachmentFormat = depthFormat;
+    // ---
+    pipelineConfigNoTextures.pipelineLayout = m_pipelineNoTexturesLayout;
+    pipelineConfigNoTextures.colorAttachmentFormat = colorFormat;
+    pipelineConfigNoTextures.depthAttachmentFormat = depthFormat;
 
-    m_Pipeline = std::make_unique<Pipeline>(
+    m_PipelineTextures = std::make_unique<Pipeline>(
         m_Device,
-        "assets/shaders/simple_shader.vert.spv",
-        "assets/shaders/simple_shader.frag.spv",
-        pipelineConfig);
+        "assets/shaders/with_textures.vert.spv",
+        "assets/shaders/with_textures.frag.spv",
+        pipelineConfigTextures);
+    m_PipelineNoTextures = std::make_unique<Pipeline>(
+        m_Device,
+        "assets/shaders/without_textures.vert.spv",
+        "assets/shaders/without_textures.frag.spv",
+        pipelineConfigNoTextures
+    );
 }
 
 void RenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
-    m_Pipeline->bind(frameInfo.commandBuffer);
-
-    // Global descriptor set (set = 0)
-    vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            m_pipelineLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
-
-    for (auto &val: frameInfo.sceneEntitiesRef | std::views::values) {
-        auto &obj = val;
-        if (!obj.model) continue;
-
-        // Texture descriptor set (set = 1)
-        vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                m_pipelineLayout, 1, 1, &obj.material.descriptorSet, 0, nullptr);
+    for (auto &[id, entity]: frameInfo.sceneEntitiesRef) {
+        if (!entity.model) continue;
 
         SimplePushConstantData push{};
-        push.modelMatrix = obj.transform.mat4();
-        push.normalMatrix = obj.transform.normalMatrix();
-        push.modelAlpha = obj.transform.alpha;
+        push.modelMatrix  = entity.transform.mat4();
+        push.modelColor   = entity.color;
+        push.modelAlpha   = entity.transform.alpha;
 
-        vkCmdPushConstants(frameInfo.commandBuffer, m_pipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(SimplePushConstantData), &push);
+        // With textures
+        if (entity.texture != nullptr) {
+            m_PipelineTextures->bind(frameInfo.commandBuffer);
+            vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    m_pipelineTexturesLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
+            vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    m_pipelineTexturesLayout, 1, 1, &entity.material.descriptorSet, 0, nullptr);
+            vkCmdPushConstants(frameInfo.commandBuffer, m_pipelineTexturesLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                               sizeof(SimplePushConstantData), &push);
+        }
+        // Without textures
+        else {
+            m_PipelineNoTextures->bind(frameInfo.commandBuffer);
+            vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    m_pipelineNoTexturesLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
+            vkCmdPushConstants(frameInfo.commandBuffer, m_pipelineNoTexturesLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                               sizeof(SimplePushConstantData), &push);
+        }
 
-        obj.model->bind(frameInfo.commandBuffer);
-        obj.model->draw(frameInfo.commandBuffer);
+        entity.model->bind(frameInfo.commandBuffer);
+        entity.model->draw(frameInfo.commandBuffer);
     }
 }
 

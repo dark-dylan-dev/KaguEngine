@@ -78,7 +78,7 @@ void App::run() {
     ImGuiContext imGuiContext(
         m_Window, *m_Renderer.getSwapChain(), m_Device,
         m_DescriptorPool,
-        m_SceneEntities, views, camera, ambientLightColor
+        m_SceneEntities, views, camera, ambientLightColor, m_Renderer.clearColor
     );
 
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -108,25 +108,26 @@ void App::run() {
             ubo.view = camera.getView();
             ubo.inverseView = camera.getInverseView();
             ubo.ambientLightColor = imGuiContext.getAmbientLightColor();
+            m_Renderer.clearColor = imGuiContext.getClearColor();
             PointLightSystem::update(frameInfo, ubo);
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             if(uboBuffers[frameIndex]->flush() != VK_SUCCESS)
                 throw std::runtime_error("Couldn't flush the ubo for one frame!");
 
             // Offscreen rendering
-            m_Renderer.beginOffscreenRenderPass(commandBuffer);
+            m_Renderer.beginOffscreenRendering(commandBuffer);
             renderSystem.renderGameObjects(frameInfo);
             pointLightSystem.render(frameInfo);
-            m_Renderer.endOffscreenRenderPass(commandBuffer);
+            m_Renderer.endOffscreenRendering(commandBuffer);
 
             // ImGui rendering
             m_Renderer.transitionOffscreenImageForImGui(commandBuffer);
             imGuiContext.render(m_Renderer);
 
             // Present the image
-            m_Renderer.beginSwapChainRenderPass(commandBuffer);
+            m_Renderer.beginSwapChainRendering(commandBuffer);
             ImGuiContext::onPresent(commandBuffer);
-            m_Renderer.endSwapChainRenderPass(commandBuffer);
+            m_Renderer.endSwapChainRendering(commandBuffer);
 
             m_Renderer.endFrame();
         }
@@ -174,18 +175,13 @@ void App::loadGameObjects() {
     m_SceneEntities.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
     // Floor
-    auto dummyTexture = Texture::makeDummyTexture(
-        m_Device,
-        *m_Renderer.getSwapChain(),
-        m_MaterialSetLayout->getDescriptorSetLayout(),
-        m_DescriptorPool->getDescriptorPool()
-    );
     loadedModel = Model::createModelFromFile(m_Device, "assets/models/base.obj");
     auto floor = Entity::createEntity();
     floor.name = "Base";
     floor.model = loadedModel;
-    floor.texture = std::move(dummyTexture);
-    floor.material = floor.texture->getMaterial();
+    floor.color = {0.596f, 0.765f, 1.0f};
+    floor.texture = nullptr;
+    floor.material = {};
     floor.transform.translation = {0.f, 0.5f, 0.f};
     floor.transform.scale = {1.f, 1.f, 1.f};
     m_SceneEntities.emplace(floor.getId(), std::move(floor));

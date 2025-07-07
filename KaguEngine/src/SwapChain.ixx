@@ -29,7 +29,7 @@ public:
     [[nodiscard]] VkImageView getDepthImageView(const int index) const { return m_DepthImageViews[index]; }
     [[nodiscard]] VkImageView getMultisampleColorImageView(const int index) const { return m_MultisampleColorImageViews[index]; }
     [[nodiscard]] size_t imageCount() const                           { return m_SwapChainImages.size(); }
-    [[nodiscard]] VkFormat getSwapChainImageFormat() const            { return m_SwapChainImageFormat; }
+    [[nodiscard]] VkFormat* getSwapChainImageFormat()                 { return &m_SwapChainImageFormat; }
     [[nodiscard]] VkExtent2D getSwapChainExtent() const               { return m_SwapChainExtent; }
     [[nodiscard]] uint32_t width() const                              { return m_SwapChainExtent.width; }
     [[nodiscard]] uint32_t height() const                             { return m_SwapChainExtent.height; }

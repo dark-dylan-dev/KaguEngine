@@ -59,7 +59,7 @@ void PointLightSystem::createPipeline(const VkFormat colorFormat, const VkFormat
     assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
     PipelineConfigInfo pipelineConfig{};
-    Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+    Pipeline::defaultPipelineConfigInfo(pipelineConfig, false);
     Pipeline::enableAlphaBlending(pipelineConfig);
     Pipeline::enableMSAA(pipelineConfig, m_Device.getSampleCount());
     pipelineConfig.attributeDescriptions.clear();

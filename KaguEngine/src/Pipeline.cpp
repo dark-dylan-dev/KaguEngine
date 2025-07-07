@@ -86,7 +86,6 @@ void Pipeline::createGraphicsPipeline(const std::string &vertFilepath, const std
     renderingCreateInfo.colorAttachmentCount = 1;
     renderingCreateInfo.pColorAttachmentFormats = &configInfo.colorAttachmentFormat;
     renderingCreateInfo.depthAttachmentFormat = configInfo.depthAttachmentFormat;
-    renderingCreateInfo.stencilAttachmentFormat = configInfo.depthAttachmentFormat;
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -130,7 +129,7 @@ void Pipeline::bind(const VkCommandBuffer commandBuffer) const {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 }
 
-void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
+void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo, bool isTextured) {
     configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
@@ -146,7 +145,7 @@ void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
     configInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
     configInfo.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
     configInfo.rasterizationInfo.lineWidth = 1.0f;
-    configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
     configInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     configInfo.rasterizationInfo.depthBiasEnable = VK_FALSE;
     configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f; // Optional
@@ -199,7 +198,7 @@ void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
     configInfo.dynamicStateInfo.flags = 0;
 
     configInfo.bindingDescriptions = Model::Vertex::getBindingDescriptions();
-    configInfo.attributeDescriptions = Model::Vertex::getAttributeDescriptions();
+    configInfo.attributeDescriptions = Model::Vertex::getAttributeDescriptions(isTextured);
 }
 
 void Pipeline::enableAlphaBlending(PipelineConfigInfo &configInfo) {

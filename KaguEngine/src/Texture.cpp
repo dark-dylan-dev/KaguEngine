@@ -47,13 +47,6 @@ std::unique_ptr<Texture> Texture::createTextureFromFile(Device &device, SwapChai
     return std::make_unique<Texture>(device, swapChain, filepath, descriptorSetLayout, descriptorPool);
 }
 
-std::unique_ptr<Texture> Texture::makeDummyTexture(Device& device, SwapChain& swapChain,
-                                                   VkDescriptorSetLayout descriptorSetLayout,
-                                                   VkDescriptorPool descriptorPool) {
-    return std::make_unique<Texture>(device, swapChain, "assets/textures/dummy_texture.png",
-                                     descriptorSetLayout, descriptorPool);
-}
-
 void Texture::createMaterial(VkDescriptorSetLayout layout, VkDescriptorPool pool) {
     if (m_TextureImage == VK_NULL_HANDLE) {
         m_Material.descriptorSet = VK_NULL_HANDLE;

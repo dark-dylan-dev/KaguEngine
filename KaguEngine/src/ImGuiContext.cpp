@@ -97,9 +97,12 @@ namespace UI_Helpers {
 ImGuiContext::ImGuiContext(
     Window &window, SwapChain &swapChain, Device &device,
     std::unique_ptr<DescriptorPool> &pool,
-    Entity::Map& sceneEntities, std::vector<Entity>& views, Camera& camera, glm::vec4& ambientLight
+    Entity::Map& sceneEntities, std::vector<Entity>& views, Camera& camera,
+    glm::vec4& ambientLight, glm::vec4& clearColor
 ) :
-    ambientLightColor{ambientLight}, poolRef{pool}, viewsRef{views}, entitiesRef{sceneEntities}, cameraRef{camera}, deviceRef{device}, swapChainRef{swapChain}, windowRef{window} {
+    windowRef{window}, swapChainRef{swapChain},
+    deviceRef{device}, cameraRef{camera}, entitiesRef{sceneEntities}, viewsRef{views},
+    poolRef{pool}, clearColorRef{clearColor}, ambientLightColorRef{ambientLight} {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     setupConfigFlags();
@@ -162,6 +165,10 @@ void ImGuiContext::setupContext() const {
     init_info.MSAASamples = deviceRef.getSampleCount();
     init_info.ImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
     init_info.UseDynamicRendering = true;
+    init_info.PipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+    init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+    init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = swapChainRef.getSwapChainImageFormat();
+    init_info.PipelineRenderingCreateInfo.depthAttachmentFormat = swapChainRef.findDepthFormat();
     ImGui_ImplVulkan_Init(&init_info);
     ImGui_ImplVulkan_CreateFontsTexture();
 }
@@ -275,7 +282,6 @@ void ImGuiContext::drawMainMenuBar() {
     ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, 5.f);
     ImGui::PushFont(io.Fonts->Fonts[0]);
     if (ImGui::BeginMainMenuBar()) {
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 8));
         if (ImGui::BeginMenu((std::string(ICON_FA_FILE) + " File").c_str())) {
             if (ImGui::MenuItem((std::string(ICON_FA_WINDOW_CLOSE) + " Exit").c_str(), "Ctrl+Q")) {
                 m_IsRunning = false;
@@ -292,7 +298,6 @@ void ImGuiContext::drawMainMenuBar() {
             }
             ImGui::EndMenu();
         }
-        ImGui::PopStyleVar();
         ImGui::EndMainMenuBar();
     }
     ImGui::PopFont();
@@ -411,7 +416,12 @@ void ImGuiContext::renderPropertiesPanel() {
                  ImGui::ColorEdit3("Color", glm::value_ptr(entity.color));
             }
         }
-
+        // No Point Light Component
+        if (entity.pointLight == nullptr) {
+            if (ImGui::CollapsingHeader("Opacity", ImGuiTreeNodeFlags_DefaultOpen)) {
+                ImGui::DragFloat("Intensity", &entity.transform.alpha, 0.01f, 0.0f, 1.0f);
+            }
+        }
         // Point Light Component
         if (entity.pointLight) {
             if (ImGui::CollapsingHeader("Point Light", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -438,7 +448,8 @@ void ImGuiContext::renderVisualsPanel() {
     ImGui::Separator();
 
     ImGui::Text("Lighting");
-    ImGui::ColorEdit4("Ambient Light", glm::value_ptr(ambientLightColor));
+    ImGui::ColorEdit4("Ambient Light", glm::value_ptr(ambientLightColorRef));
+    ImGui::ColorEdit4("Clear color", glm::value_ptr(clearColorRef));
 
     ImGui::End();
 }

@@ -30,10 +30,6 @@ public:
                                                           const std::string &filepath,
                                                           VkDescriptorSetLayout descriptorSetLayout,
                                                           VkDescriptorPool descriptorPool);
-    // Dummy texture 1x1 pixel
-    static std::unique_ptr<Texture> makeDummyTexture(Device& device, SwapChain& swapChain,
-                                                     VkDescriptorSetLayout descriptorSetLayout,
-                                                     VkDescriptorPool descriptorPool);
 
     [[nodiscard]] const VkImage& getTextureImage()         const { return m_TextureImage; }
     [[nodiscard]] const VkDeviceMemory& getTextureMemory() const { return m_TextureImageMemory; }
