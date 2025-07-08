@@ -1,5 +1,8 @@
 module;
 
+// config
+#include "include/config.hpp"
+
 // libs
 #include "include/font_awesome.hpp"
 #include "include/imgui_includes.hpp"
@@ -91,6 +94,9 @@ namespace UI_Helpers {
         ImGui::PopID();
 
         return value_changed;
+    }
+    void ImGui_Text(const std::string_view& sv) {
+        ImGui::TextUnformatted(sv.data(), sv.data() + sv.size());
     }
 }
 
@@ -251,6 +257,7 @@ void ImGuiContext::onRender(const Renderer& renderer) {
     renderPropertiesPanel();
     renderVisualsPanel();
     renderConsole();
+    renderStatusBar();
 }
 
 ImGuiViewport* ImGuiContext::setupViewport() {
@@ -496,6 +503,54 @@ void ImGuiContext::renderConsole() {
         ImGui::SetKeyboardFocusHere(-1);
 
     ImGui::End();
+}
+
+void ImGuiContext::renderStatusBar() {
+    constexpr ImGuiWindowFlags window_flags =
+    ImGuiWindowFlags_NoScrollbar |
+    ImGuiWindowFlags_NoSavedSettings |
+    ImGuiWindowFlags_MenuBar;
+
+    const float height = ImGui::GetFrameHeight();
+
+    // Position the status bar at the bottom of the main viewport
+    if (ImGui::BeginViewportSideBar("##StatusBar", ImGui::GetMainViewport(), ImGuiDir_Down, height, window_flags))
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            // --- Left Side: Engine Info ---
+            UI_Helpers::ImGui_Text(Config::engineName);
+            ImGui::SameLine();
+            UI_Helpers::ImGui_Text(Config::engineVersion);
+            ImGui::SameLine();
+            ImGui::Text("|");
+
+            // --- Middle: Build & Platform Info ---
+            ImGui::SameLine();
+            UI_Helpers::ImGui_Text(Config::buildType);
+            ImGui::SameLine();
+            ImGui::Text("[%s]", Config::architecture.data());
+            ImGui::SameLine();
+            ImGui::Text("|");
+            ImGui::SameLine();
+            UI_Helpers::ImGui_Text(Config::platform);
+            ImGui::SameLine();
+            ImGui::Text("|");
+            ImGui::SameLine();
+            UI_Helpers::ImGui_Text(Config::compiler);
+
+            // --- Right Side: Frame Rate ---
+            const std::string framerate = std::to_string(static_cast<int>(ImGui::GetIO().Framerate)) + " FPS";
+            // Right-alignment position
+            constexpr float internPadding = 8.0f;
+            const auto align_pos = ImGui::GetWindowWidth() - ImGui::CalcTextSize(framerate.c_str()).x - ImGui::GetStyle().FramePadding.x - internPadding;
+            ImGui::SameLine(align_pos);
+            ImGui::Text("%s", framerate.c_str());
+
+            ImGui::EndMenuBar();
+        }
+        ImGui::End();
+    }
 }
 
 void ImGuiContext::onPresent(VkCommandBuffer commandBuffer) {

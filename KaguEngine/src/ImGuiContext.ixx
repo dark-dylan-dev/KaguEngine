@@ -72,6 +72,7 @@ private:
     void renderPropertiesPanel();
     void renderVisualsPanel();
     void renderConsole();
+    void renderStatusBar();
 
     // --- State ---
     bool m_IsRunning = true;
