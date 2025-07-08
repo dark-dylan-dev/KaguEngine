@@ -1,5 +1,8 @@
 module;
 
+// config
+#include "include/config.hpp"
+
 // libs
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -58,7 +61,7 @@ Device::~Device() {
     vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
     vkDestroyDevice(m_Device, nullptr);
 
-    if (enableValidationLayers) {
+    if constexpr (Config::enableValidationLayers) {
         DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
     }
 
@@ -67,17 +70,17 @@ Device::~Device() {
 }
 
 void Device::createInstance() {
-    if (enableValidationLayers && !checkValidationLayerSupport()) {
+    if (Config::isDebug && !checkValidationLayerSupport()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
 
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Kagu Engine";
-    appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
-    appInfo.pEngineName = "Kagu Engine";
-    appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
-    appInfo.apiVersion = VK_API_VERSION_1_3;
+    appInfo.pApplicationName = Config::engineName.data();
+    appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 0, 1, 0);
+    appInfo.pEngineName = Config::engineName.data();
+    appInfo.engineVersion = VK_MAKE_API_VERSION(0, 0, 1, 0);
+    appInfo.apiVersion = Config::vulkanApiVersion;
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -88,7 +91,7 @@ void Device::createInstance() {
     createInfo.ppEnabledExtensionNames = extensions.data();
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-    if (enableValidationLayers) {
+    if constexpr (Config::enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
         createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
 
@@ -245,7 +248,7 @@ void Device::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT
 }
 
 void Device::setupDebugMessenger() {
-    if (!enableValidationLayers)
+    if constexpr (!Config::isDebug)
         return;
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
@@ -285,7 +288,7 @@ std::vector<const char *> Device::getRequiredExtensions() const {
 
     std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-    if (enableValidationLayers) {
+    if constexpr (Config::enableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 

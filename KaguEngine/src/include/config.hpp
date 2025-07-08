@@ -74,21 +74,15 @@ namespace Config {
     constexpr std::string_view cppStandard = "C++23";
 #elif __cplusplus == 202002L
     constexpr std::string_view cppStandard = "C++20";
-#elif __cplusplus == 201703L
-    constexpr std::string_view cppStandard = "C++17";
-#elif __cplusplus == 201402L
-    constexpr std::string_view cppStandard = "C++14";
-#elif __cplusplus == 201103L
-    constexpr std::string_view cppStandard = "C++11";
 #else
-    constexpr std::string_view cppStandard = "Pre-C++11";
+    constexpr std::string_view cppStandard = "Pre-C++20"; // Too old version to support modules
 #endif
 
     // --- Vulkan Specifics ---
     constexpr bool enableValidationLayers = isDebug;
     constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
 
-    // --- File Paths (Example) ---
+    // --- File Paths ---
     constexpr std::string_view assetPath = "assets/";
     constexpr std::string_view shaderPath = "assets/shaders/";
 
