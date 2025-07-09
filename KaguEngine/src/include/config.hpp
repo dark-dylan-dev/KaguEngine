@@ -50,7 +50,7 @@ namespace Config {
 #else
     constexpr std::string_view architecture = "Unknown";
     constexpr int platformBits = 0;
-#error Unknown architecture
+#pragma message("Your architecture might not support the application.")
 #endif
 
     // --- Compiler Info ---
@@ -66,7 +66,7 @@ namespace Config {
 #else
     constexpr std::string_view compiler = "Unknown";
     constexpr int compilerVersion = 0;
-#error Unknown compiler
+#pragma message("Your compiler might not work with this application.")
 #endif
 
     // --- C++ version ---
@@ -79,7 +79,7 @@ namespace Config {
     constexpr std::string_view cppStandard = "C++20";
 #else
     constexpr std::string_view cppStandard = "Pre-C++20";
-#error Your C++ version is too old to support modules
+#pragma message("Your C++ version might not support C++20 modules properly.")
 #endif
 
     // --- Vulkan Specifics ---
