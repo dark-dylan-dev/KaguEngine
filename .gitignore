@@ -5,6 +5,12 @@
 *.spv
 *.obj
 
+# Unfinished scripts
+build.bat
+build.sh
+KaguEngine/assets/shaders/compile.bat
+KaguEngine/assets/shaders/compile.sh
+
 # CMake binary directories
 /cmake-build-debug/
 /cmake-build-minsizerel/

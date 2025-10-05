@@ -154,7 +154,7 @@ void App::loadGameObjects() {
     centralObamium.material = centralObamium.texture->getMaterial();
     centralObamium.transform.translation = {0.0f, 0.0f, 0.0f};
     centralObamium.transform.scale = {1.f, 1.f, 1.f};
-    centralObamium.transform.rotation = {0.f, 0.f, 3.14159265f};
+    centralObamium.transform.rotation = {0.f, 0.f, glm::pi<float>()};
     m_SceneEntities.emplace(centralObamium.getId(), std::move(centralObamium));
 
     // Viking room
@@ -171,7 +171,7 @@ void App::loadGameObjects() {
     vikingRoom.material = vikingRoom.texture->getMaterial();
     vikingRoom.transform.translation = {2.f, 0.f, 2.f};
     vikingRoom.transform.scale = {1.f, 1.f, 1.f};
-    vikingRoom.transform.rotation = {3.14159265f / 2.f, 0.f, 3.14159265f};
+    vikingRoom.transform.rotation = {glm::pi<float>() / 2.f, 0.f, glm::pi<float>()};
     m_SceneEntities.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
     // Floor

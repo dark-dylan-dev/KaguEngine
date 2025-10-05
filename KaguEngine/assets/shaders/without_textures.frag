@@ -24,6 +24,7 @@ layout(push_constant) uniform Push {
     mat4 modelMatrix;
     vec3 modelColor;
     float modelAlpha;
+    float gammaCorrection;
 } push;
 
 void main() {

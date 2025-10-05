@@ -27,10 +27,11 @@ layout(push_constant) uniform Push {
     mat4 modelMatrix;
     vec3 modelColor;
     float modelAlpha;
+    float gammaCorrection;
 } push;
 
 vec3 srgbToLinear(vec3 srgb) {
-    return pow(srgb, vec3(1.0/2.2));
+    return pow(clamp(srgb, 0.0, 1.0), vec3(1.0/push.gammaCorrection));
 }
 
 void main() {
@@ -40,8 +41,6 @@ void main() {
 
     vec3 cameraPosWorld = ubo.invView[3].xyz;
     vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
-
-    vec4 sourceColor = vec4(0.0);
 
     for (int i = 0; i < ubo.numLights; i++) {
         PointLight light = ubo.pointLights[i];
@@ -61,7 +60,7 @@ void main() {
         blinnTerm = pow(blinnTerm, 512.0); // higher values -> sharper highlight
         specularLight += intensity * blinnTerm;
     }
-    sourceColor = vec4(diffuseLight * fragColor + specularLight * fragColor, push.modelAlpha);
+    vec4 sourceColor = vec4(diffuseLight * fragColor + specularLight * fragColor, push.modelAlpha);
     vec4 texColor = vec4(srgbToLinear(texture(texSampler, fragTexCoord).rgb), 1.0);
     outColor = vec4(sourceColor * texColor);
 }

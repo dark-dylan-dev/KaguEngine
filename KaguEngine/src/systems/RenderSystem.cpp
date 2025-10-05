@@ -24,6 +24,7 @@ struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f};
     glm::vec3 modelColor{1.f};
     float modelAlpha{1.f};
+    float gammaCorrection{2.2f};
 };
 
 RenderSystem::RenderSystem(
@@ -130,9 +131,10 @@ void RenderSystem::renderGameObjects(const FrameInfo &frameInfo) const {
         if (!entity.model) continue;
 
         SimplePushConstantData push{};
-        push.modelMatrix  = entity.transform.mat4();
-        push.modelColor   = entity.color;
-        push.modelAlpha   = entity.transform.alpha;
+        push.modelMatrix     = entity.transform.mat4();
+        push.modelColor      = entity.color;
+        push.modelAlpha      = entity.transform.alpha;
+        push.gammaCorrection = 2.2f;
 
         // With textures
         if (entity.texture != nullptr) {

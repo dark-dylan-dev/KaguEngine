@@ -32,7 +32,7 @@ namespace Config {
     constexpr std::string_view platform = "Unix";
 #else
     constexpr std::string_view platform = "Unsupported";
-#error Unsupported platform
+    #error Unsupported platform
 #endif
 
 #if defined(_M_X64) || defined(__x86_64__)
@@ -50,7 +50,7 @@ namespace Config {
 #else
     constexpr std::string_view architecture = "Unknown";
     constexpr int platformBits = 0;
-#pragma message("Your architecture might not support the application.")
+    #pragma message("Your architecture might not support the application.")
 #endif
 
     // --- Compiler Info ---
@@ -66,20 +66,27 @@ namespace Config {
 #else
     constexpr std::string_view compiler = "Unknown";
     constexpr int compilerVersion = 0;
-#pragma message("Your compiler might not work with this application.")
+    #pragma message("Your compiler might not work with this application.")
 #endif
 
     // --- C++ version ---
-#if __cplusplus > 202302L
+    // MSVC workaround
+#if defined(_MSVC_LANG)
+    #define CPP_STD _MSVC_LANG
+#else
+    #define CPP_STD __cplusplus
+#endif
+
+#if CPP_STD > 202302L
     // The official macro value for C++26 is not yet finalized.
     constexpr std::string_view cppStandard = "C++26 (Experimental)";
-#elif __cplusplus == 202302L
+#elif CPP_STD == 202302L
     constexpr std::string_view cppStandard = "C++23";
-#elif __cplusplus == 202002L
+#elif CPP_STD == 202002L
     constexpr std::string_view cppStandard = "C++20";
 #else
     constexpr std::string_view cppStandard = "Pre-C++20";
-#pragma message("Your C++ version might not support C++20 modules properly.")
+    #pragma message("Your C++ version might not support C++20 modules properly.")
 #endif
 
     // --- Vulkan Specifics ---
