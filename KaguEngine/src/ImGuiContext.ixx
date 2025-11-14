@@ -97,7 +97,7 @@ private:
 
     // --- Console State ---
     bool m_ConsoleOpened = true;
-    char m_InputBuffer[256];
+    char m_InputBuffer[256] = "";
     std::vector<std::string> m_Items = { "Welcome to Kagu Engine!", "[Info] Still in development!", "[Hint] Select an entity in the hierarchy to see its properties." };
 };
 
