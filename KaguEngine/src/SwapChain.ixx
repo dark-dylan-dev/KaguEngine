@@ -86,6 +86,7 @@ private:
     std::vector<VkFence> m_InFlightFences;
     std::vector<VkFence> m_ImagesInFlight;
     size_t m_CurrentFrame = 0;
+    uint32_t m_ImageCount;
 };
 
 } // Namespace KaguEngine

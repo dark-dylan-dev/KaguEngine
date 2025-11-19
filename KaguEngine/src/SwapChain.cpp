@@ -66,9 +66,11 @@ SwapChain::~SwapChain() {
 
     // Destroy synchronization objects
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(deviceRef.device(), m_RenderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(deviceRef.device(), m_ImageAvailableSemaphores[i], nullptr);
         vkDestroyFence(deviceRef.device(), m_InFlightFences[i], nullptr);
+    }
+    for (uint32_t i = 0; i < m_ImageCount; i++) {
+        vkDestroySemaphore(deviceRef.device(), m_RenderFinishedSemaphores[i], nullptr);
     }
     m_RenderFinishedSemaphores.clear();
     m_ImageAvailableSemaphores.clear();
@@ -88,7 +90,7 @@ VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) const {
     return result;
 }
 
-VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, const uint32_t *imageIndex) {
+VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer* buffers, const uint32_t* imageIndex) {
     if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(deviceRef.device(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
     }
@@ -97,18 +99,19 @@ VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, const u
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    const VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphores[m_CurrentFrame]};
+    VkSemaphore waitSemaphore = m_ImageAvailableSemaphores[m_CurrentFrame];
+    VkSemaphore signalSemaphore = m_RenderFinishedSemaphores[*imageIndex];
+
     constexpr VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitSemaphores = &waitSemaphore;
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = buffers;
 
-    const VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[m_CurrentFrame]};
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    submitInfo.pSignalSemaphores = &signalSemaphore;
 
     vkResetFences(deviceRef.device(), 1, &m_InFlightFences[m_CurrentFrame]);
     if (vkQueueSubmit(deviceRef.graphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS) {
@@ -119,12 +122,9 @@ VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, const u
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
-    const VkSwapchainKHR swapChains[] = {m_SwapChain};
+    presentInfo.pWaitSemaphores = &signalSemaphore;
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-
+    presentInfo.pSwapchains = &m_SwapChain;
     presentInfo.pImageIndices = imageIndex;
 
     const auto result = vkQueuePresentKHR(deviceRef.presentQueue(), &presentInfo);
@@ -145,12 +145,13 @@ void SwapChain::createSwapChain() {
     if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount) {
         imageCount = capabilities.maxImageCount;
     }
+    m_ImageCount = imageCount;
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = deviceRef.surface();
 
-    createInfo.minImageCount = imageCount;
+    createInfo.minImageCount = m_ImageCount;
     createInfo.imageFormat = format;
     createInfo.imageColorSpace = colorSpace;
     createInfo.imageExtent = extent;
@@ -182,9 +183,9 @@ void SwapChain::createSwapChain() {
         throw std::runtime_error("failed to create swap chain!");
     }
 
-    vkGetSwapchainImagesKHR(deviceRef.device(), m_SwapChain, &imageCount, nullptr);
-    m_SwapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(deviceRef.device(), m_SwapChain, &imageCount, m_SwapChainImages.data());
+    vkGetSwapchainImagesKHR(deviceRef.device(), m_SwapChain, &m_ImageCount, nullptr);
+    m_SwapChainImages.resize(m_ImageCount);
+    vkGetSwapchainImagesKHR(deviceRef.device(), m_SwapChain, &m_ImageCount, m_SwapChainImages.data());
 
     m_SwapChainImageFormat = format;
     m_SwapChainExtent = extent;
@@ -297,9 +298,9 @@ void SwapChain::createColorResources() {
 
 void SwapChain::createSyncObjects() {
     m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    m_RenderFinishedSemaphores.resize(m_ImageCount);
     m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    m_ImagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
+    m_ImagesInFlight.resize(m_ImageCount, VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -311,10 +312,14 @@ void SwapChain::createSyncObjects() {
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         if (vkCreateSemaphore(deviceRef.device(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) !=
                     VK_SUCCESS ||
-            vkCreateSemaphore(deviceRef.device(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) !=
-                    VK_SUCCESS ||
             vkCreateFence(deviceRef.device(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create synchronization objects for a frame!");
+            throw std::runtime_error("failed to create per-frame synchronization objects");
+            }
+    }
+
+    for (uint32_t i = 0; i < m_ImageCount; i++) {
+        if (vkCreateSemaphore(deviceRef.device(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create per-image renderFinished semaphore");
         }
     }
 }
