@@ -10,6 +10,8 @@ module;
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "imgui.h"
+
 module App;
 
 // std
@@ -51,15 +53,15 @@ void App::run() {
 
     RenderSystem renderSystem{
         m_Device,
-        m_Renderer.getOffscreenFormat(),
-        m_Renderer.getOffscreenDepthFormat(),
+        m_Renderer.getFormat(),
+        m_Renderer.getDepthFormat(),
         m_GlobalSetLayout->getDescriptorSetLayout(),    // set = 0 (UBO)
         m_MaterialSetLayout->getDescriptorSetLayout()   // set = 1 (textures)
     };
     PointLightSystem pointLightSystem{
         m_Device,
-        m_Renderer.getOffscreenFormat(),
-        m_Renderer.getOffscreenDepthFormat(),
+        m_Renderer.getFormat(),
+        m_Renderer.getDepthFormat(),
         m_GlobalSetLayout->getDescriptorSetLayout()
     };
     Camera camera{};
@@ -85,6 +87,12 @@ void App::run() {
     while (!m_Window.shouldClose() && m_IsRunning) {
         KeyboardMovementController cameraController{};
         glfwPollEvents();
+
+        if (m_Window.windowResized()) {
+            m_Renderer.recreateSwapChain();
+            imGuiContext.recreateSwapChain();
+            m_Window.resetWindowResizedFlag();
+        }
 
         auto newTime = std::chrono::high_resolution_clock::now();
         float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
@@ -121,13 +129,9 @@ void App::run() {
             m_Renderer.endOffscreenRendering(commandBuffer);
 
             // ImGui rendering
-            m_Renderer.transitionOffscreenImageForImGui(commandBuffer);
-            imGuiContext.render(m_Renderer);
-
-            // Present the image
-            m_Renderer.beginSwapChainRendering(commandBuffer);
-            ImGuiContext::onPresent(commandBuffer);
-            m_Renderer.endSwapChainRendering(commandBuffer);
+            m_Renderer.beginRendering(commandBuffer);
+            imGuiContext.render(m_Renderer, commandBuffer);
+            m_Renderer.endRendering(commandBuffer);
 
             m_Renderer.endFrame();
         }

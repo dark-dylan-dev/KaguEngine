@@ -40,31 +40,35 @@ public:
     }
 
     VkCommandBuffer beginFrame();
-    void endFrame();
-    void beginSwapChainRendering(VkCommandBuffer commandBuffer) const;
-    void endSwapChainRendering(VkCommandBuffer commandBuffer) const;
+    bool endFrame();
 
-    // Off screen render pass
+    // Off-screen rendering
     void beginOffscreenRendering(VkCommandBuffer commandBuffer);
-    void endOffscreenRendering(VkCommandBuffer commandBuffer) const;
-    void transitionOffscreenImageForImGui(VkCommandBuffer commandBuffer);
+    void endOffscreenRendering(VkCommandBuffer commandBuffer);
 
-    [[nodiscard]] VkDescriptorSet getOffscreenImGuiDescriptorSet() const { return m_offscreenImGuiDescriptorSet; }
-    [[nodiscard]] VkExtent2D getOffscreenExtent() const { return m_offscreenExtent; }
-    [[nodiscard]] VkFormat getOffscreenFormat() const { return m_offscreenFormat; }
-    [[nodiscard]] VkFormat getOffscreenDepthFormat() const { return m_offscreenDepthFormat; }
+    //
+    void beginRendering(VkCommandBuffer commandBuffer) const;
+    void endRendering(VkCommandBuffer commandBuffer) const;
+
+    [[nodiscard]] VkDescriptorSet getSceneDescriptorSet() const { return m_offscreenImGuiDescriptorSet; }
+    [[nodiscard]] VkExtent2D getExtent()                  const { return m_SwapChain->getSwapChainExtent(); }
+    [[nodiscard]] VkFormat getFormat()                    const { return *m_SwapChain->getSwapChainImageFormat(); }
+    [[nodiscard]] VkFormat getDepthFormat()               const { return m_SwapChain->findDepthFormat(); }
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
     glm::vec4 clearColor = { 0.1f, 0.1f, 0.15f, 1.0f };
+    bool needsResize = false;
+    void recreateSwapChain();
 
 private:
     void createCommandBuffers();
     void freeCommandBuffers();
-    void recreateSwapChain();
 
     Window &windowRef;
     Device &deviceRef;
     std::unique_ptr<SwapChain> m_SwapChain;
+    std::shared_ptr<SwapChain> m_OldSwapChain;
+    uint32_t m_OldSwapChainCleanupTimer = 0;
     std::vector<VkCommandBuffer> m_commandBuffers;
 
     uint32_t m_currentImageIndex;
@@ -75,9 +79,6 @@ private:
     VkDescriptorPool m_offscreenDescriptorPool = VK_NULL_HANDLE;
     VkImageLayout m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkDescriptorSetLayout m_offscreenDescriptorSetLayout = VK_NULL_HANDLE;
-    VkFormat m_offscreenFormat = VK_FORMAT_B8G8R8A8_UNORM;
-    VkFormat m_offscreenDepthFormat;
-    VkExtent2D m_offscreenExtent{};
     VkSampler m_offscreenSampler = VK_NULL_HANDLE;
 
     // Multi sampled color image
@@ -95,7 +96,7 @@ private:
     VkImageView m_offscreenDepthView = VK_NULL_HANDLE;
 
     void createOffscreenResources();
-    void cleanupOffscreenResources();
+    void cleanupOffscreenResources(bool lastCall = false);
     void createOffscreenDescriptorSet();
 };
 

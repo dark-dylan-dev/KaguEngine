@@ -31,10 +31,8 @@ public:
     );
     ~ImGuiContext();
 
-    static void recreateSwapChain();
-    void render(const Renderer& renderer);
-
-    static void onPresent(VkCommandBuffer commandBuffer);
+    void recreateSwapChain() const;
+    void render(const Renderer& renderer, VkCommandBuffer commandBuffer);
 
     // Specs
     [[nodiscard]] float getDepth()                  const { return m_MaxDepth[m_CamIdx]; }

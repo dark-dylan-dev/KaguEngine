@@ -92,7 +92,7 @@ VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) const {
 
 VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer* buffers, const uint32_t* imageIndex) {
     if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
-        vkWaitForFences(deviceRef.device(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(deviceRef.device(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, 100);
     }
     m_ImagesInFlight[*imageIndex] = m_InFlightFences[m_CurrentFrame];
 
@@ -352,6 +352,7 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     }
 
     // No frames dropped, higher latency
+    std::cout << "Swapchain present mode falling back to FIFO (V-Sync)\n";
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 

@@ -122,6 +122,10 @@ ImGuiContext::~ImGuiContext() {
     ImGui::DestroyContext();
 }
 
+void ImGuiContext::recreateSwapChain() const {
+    ImGui_ImplVulkan_SetMinImageCount(3);
+}
+
 void ImGuiContext::setupConfigFlags() {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -167,9 +171,9 @@ void ImGuiContext::setupContext() const {
     init_info.DescriptorPool = poolRef->getDescriptorPool();
     init_info.Allocator = nullptr;
     init_info.Subpass = 0;
-    init_info.MinImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
     init_info.MSAASamples = deviceRef.getSampleCount();
-    init_info.ImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
+    init_info.MinImageCount = 3;
+    init_info.ImageCount = 3;
     init_info.UseDynamicRendering = true;
     init_info.PipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
     init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
@@ -226,13 +230,12 @@ void ImGuiContext::setStyleVars() {
     style.ButtonTextAlign   = ImVec2(0.5f, 0.5f);
 }
 
-void ImGuiContext::recreateSwapChain() {
-    ImGui_ImplVulkan_SetMinImageCount(SwapChain::MAX_FRAMES_IN_FLIGHT);
-}
-
-void ImGuiContext::render(const Renderer& renderer) {
+void ImGuiContext::render(const Renderer& renderer, VkCommandBuffer commandBuffer) {
     beginRender();
     onRender(renderer);
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+    endRender();
 }
 
 void ImGuiContext::beginRender() {
@@ -367,7 +370,7 @@ void ImGuiContext::render3DScene(const Renderer& renderer) const {
         (viewportSpace.y - renderSize.y) * 0.5f
     };
     ImGui::SetCursorPos(imagePos);
-    ImGui::Image(reinterpret_cast<ImTextureID>(renderer.getOffscreenImGuiDescriptorSet()), renderSize);
+    ImGui::Image(reinterpret_cast<ImTextureID>(renderer.getSceneDescriptorSet()), renderSize);
 
     ImGui::End();
     ImGui::PopStyleVar();
@@ -540,7 +543,7 @@ void ImGuiContext::renderStatusBar() {
             UI_Helpers::ImGui_Text(Config::compiler);
 
             // --- Right Side: Frame Rate ---
-            const std::string framerate = std::to_string(static_cast<int>(ImGui::GetIO().Framerate)) + " FPS";
+            const std::string framerate = std::to_string(static_cast<int>(1.0f / ImGui::GetIO().DeltaTime)) + " FPS";
             // Right-alignment position
             constexpr float internPadding = 8.0f;
             const auto align_pos = ImGui::GetWindowWidth() - ImGui::CalcTextSize(framerate.c_str()).x - ImGui::GetStyle().FramePadding.x - internPadding;
@@ -551,12 +554,6 @@ void ImGuiContext::renderStatusBar() {
         }
         ImGui::End();
     }
-}
-
-void ImGuiContext::onPresent(VkCommandBuffer commandBuffer) {
-    ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
-    endRender();
 }
 
 void ImGuiContext::endRender() {
