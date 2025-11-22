@@ -33,6 +33,7 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, const float d
         rotate.x -= 1.f;
 
     // Fullscreen check
+    /*
     if (glfwGetKey(window, keys.fullScreen) == GLFW_PRESS && !isHolding) {
         if (!isFullscreen) {
             glfwGetWindowSize(window, &width, &height);
@@ -49,6 +50,7 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, const float d
     else if (glfwGetKey(window, keys.fullScreen) == GLFW_RELEASE && isHolding) {
         isHolding = false;
     }
+    */
 
     if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
         entity.transform.rotation += lookSpeed * dt * glm::normalize(rotate);

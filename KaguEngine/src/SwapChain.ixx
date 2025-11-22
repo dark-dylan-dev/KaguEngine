@@ -24,10 +24,10 @@ public:
     SwapChain(const SwapChain &) = delete;
     SwapChain &operator=(const SwapChain &) = delete;
 
-    [[nodiscard]] VkImageView getImageView(const int index) const     { return m_SwapChainImageViews[index]; }
-    [[nodiscard]] VkImage getImage(const int index) const             { return m_SwapChainImages[index]; }
-    [[nodiscard]] VkImageView getDepthImageView(const int index) const { return m_DepthImageViews[index]; }
-    [[nodiscard]] VkImageView getMultisampleColorImageView(const int index) const { return m_MultisampleColorImageViews[index]; }
+    [[nodiscard]] VkImageView getImageView(const uint32_t index) const     { return m_SwapChainImageViews[index]; }
+    [[nodiscard]] VkImage getImage(const uint32_t index) const             { return m_SwapChainImages[index]; }
+    [[nodiscard]] VkImageView getDepthImageView(const uint32_t index) const { return m_DepthImageViews[index]; }
+    [[nodiscard]] VkImageView getMultisampleColorImageView(const uint32_t index) const { return m_MultisampleColorImageViews[index]; }
     [[nodiscard]] size_t imageCount() const                           { return m_SwapChainImages.size(); }
     [[nodiscard]] VkFormat* getSwapChainImageFormat()                 { return &m_SwapChainImageFormat; }
     [[nodiscard]] VkExtent2D getSwapChainExtent() const               { return m_SwapChainExtent; }

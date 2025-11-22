@@ -10,8 +10,6 @@ module;
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "imgui.h"
-
 module App;
 
 // std
@@ -90,7 +88,7 @@ void App::run() {
 
         if (m_Window.windowResized()) {
             m_Renderer.recreateSwapChain();
-            imGuiContext.recreateSwapChain();
+            ImGuiContext::recreateSwapChain();
             m_Window.resetWindowResizedFlag();
         }
 

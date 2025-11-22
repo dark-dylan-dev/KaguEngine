@@ -69,18 +69,18 @@ void Renderer::recreateSwapChain() {
         glfwWaitEvents();
     }
     vkDeviceWaitIdle(deviceRef.device());
-    m_OldSwapChain.reset();
-    if (m_SwapChain == nullptr) {
+    m_OldSwapChain = std::move(m_SwapChain);
+    if (m_OldSwapChain == nullptr) {
         m_SwapChain = std::make_unique<SwapChain>(deviceRef, extent);
     } else {
-        m_OldSwapChain = std::move(m_SwapChain);
-        m_OldSwapChainCleanupTimer = 2;
+        m_OldSwapChainCleanupTimer = 3;
         m_SwapChain = std::make_unique<SwapChain>(deviceRef, extent, m_OldSwapChain);
         if (!m_OldSwapChain->compareSwapFormats(*m_SwapChain)) {
             throw std::runtime_error("Swap chain image(or depth) format has changed!");
         }
     }
     m_currentFrameIndex = 0;
+    m_currentImageIndex = 0;
     createOffscreenResources();
 }
 
@@ -346,19 +346,15 @@ VkCommandBuffer Renderer::beginFrame() {
     if (m_OldSwapChain) {
         if (m_OldSwapChainCleanupTimer > 0) {
             m_OldSwapChainCleanupTimer--;
+            std::cout << "Frames before release old swap chain : " << m_OldSwapChainCleanupTimer << std::endl;
         } else {
-            // Timer expired, safe to destroy the old swapchain now.
-            // This happens frames LATER, spreading the cost and avoiding the AMD stall.
             m_OldSwapChain.reset();
+            std::cout << "Destroyed the old swap chain\n";
         }
     }
 
-    auto start = std::chrono::high_resolution_clock::now();
     const auto result = m_SwapChain->acquireNextImage(&m_currentImageIndex);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        std::cerr << "acquireNextImage() in " << duration.count() << "ms when VK_ERROR_OUT_OF_DATE_KHR in beginFrame()\n";
         return nullptr;
     }
 

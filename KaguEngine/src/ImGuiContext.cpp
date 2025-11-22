@@ -122,7 +122,7 @@ ImGuiContext::~ImGuiContext() {
     ImGui::DestroyContext();
 }
 
-void ImGuiContext::recreateSwapChain() const {
+void ImGuiContext::recreateSwapChain() {
     ImGui_ImplVulkan_SetMinImageCount(3);
 }
 

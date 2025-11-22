@@ -31,7 +31,7 @@ public:
     );
     ~ImGuiContext();
 
-    void recreateSwapChain() const;
+    static void recreateSwapChain() ;
     void render(const Renderer& renderer, VkCommandBuffer commandBuffer);
 
     // Specs
