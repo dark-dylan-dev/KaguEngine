@@ -57,7 +57,6 @@ public:
 
     std::unique_ptr<SwapChain>& getSwapChain() { return m_SwapChain; }
     glm::vec4 clearColor = { 0.1f, 0.1f, 0.15f, 1.0f };
-    bool needsResize = false;
     void recreateSwapChain();
 
 private:

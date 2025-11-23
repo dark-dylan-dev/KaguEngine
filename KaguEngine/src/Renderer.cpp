@@ -382,6 +382,7 @@ bool Renderer::endFrame() {
 
     const auto result = m_SwapChain->submitCommandBuffers(&commandBuffer, &m_currentImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || windowRef.windowResized()) {
+        m_isFrameStarted = false;
         windowRef.setFramebufferResizedFlag(true);
         return false;
     }

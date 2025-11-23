@@ -350,7 +350,6 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     }
 
     // No frames dropped, higher latency
-    std::cout << "Swapchain present mode falling back to FIFO (V-Sync)\n";
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
