@@ -24,10 +24,10 @@ public:
     SwapChain(const SwapChain &) = delete;
     SwapChain &operator=(const SwapChain &) = delete;
 
-    [[nodiscard]] VkImageView getImageView(const int index) const     { return m_SwapChainImageViews[index]; }
-    [[nodiscard]] VkImage getImage(const int index) const             { return m_SwapChainImages[index]; }
-    [[nodiscard]] VkImageView getDepthImageView(const int index) const { return m_DepthImageViews[index]; }
-    [[nodiscard]] VkImageView getMultisampleColorImageView(const int index) const { return m_MultisampleColorImageViews[index]; }
+    [[nodiscard]] VkImageView getImageView(const uint32_t index) const     { return m_SwapChainImageViews[index]; }
+    [[nodiscard]] VkImage getImage(const uint32_t index) const             { return m_SwapChainImages[index]; }
+    [[nodiscard]] VkImageView getDepthImageView(const uint32_t index) const { return m_DepthImageViews[index]; }
+    [[nodiscard]] VkImageView getMultisampleColorImageView(const uint32_t index) const { return m_MultisampleColorImageViews[index]; }
     [[nodiscard]] size_t imageCount() const                           { return m_SwapChainImages.size(); }
     [[nodiscard]] VkFormat* getSwapChainImageFormat()                 { return &m_SwapChainImageFormat; }
     [[nodiscard]] VkExtent2D getSwapChainExtent() const               { return m_SwapChainExtent; }
@@ -58,7 +58,6 @@ private:
 
     // Helper functions
     static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-
     static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
     [[nodiscard]] VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 
@@ -81,7 +80,7 @@ private:
     VkSwapchainKHR m_SwapChain;
     std::shared_ptr<SwapChain> m_OldSwapChain;
 
-    std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+    std::vector<VkSemaphore> m_AcquireSemaphores;
     std::vector<VkSemaphore> m_RenderFinishedSemaphores;
     std::vector<VkFence> m_InFlightFences;
     std::vector<VkFence> m_ImagesInFlight;

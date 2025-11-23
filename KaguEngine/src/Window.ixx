@@ -26,6 +26,7 @@ public:
         return {static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height)};
     }
 
+    void setFramebufferResizedFlag(bool flag) { m_FramebufferResized = flag; }
     void resetWindowResizedFlag() { m_FramebufferResized = false; }
 
     void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) const;

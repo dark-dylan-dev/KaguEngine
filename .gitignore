@@ -8,6 +8,8 @@
 # Unfinished scripts
 build.bat
 build.sh
+build_debug.bat
+build_debug.sh
 KaguEngine/assets/shaders/compile.bat
 KaguEngine/assets/shaders/compile.sh
 
@@ -17,3 +19,4 @@ KaguEngine/assets/shaders/compile.sh
 /cmake-build-release/
 /cmake-build-relwithdebinfo/
 /build/
+/build_debug/

@@ -19,7 +19,7 @@ import KaguEngine.Window;
 namespace KaguEngine {
 
 namespace { // Anonymous namespace for internal helpers
-void cmdTransitionImageLayout(
+void cmdTransitionImage(
     VkCommandBuffer commandBuffer,
     VkImage image,
     VkImageLayout oldLayout,
@@ -43,8 +43,7 @@ void cmdTransitionImageLayout(
 
     vkCmdPipelineBarrier(
         commandBuffer,
-        srcStageMask,
-        dstStageMask,
+        srcStageMask, dstStageMask,
         0,
         0, nullptr,
         0, nullptr,
@@ -55,13 +54,12 @@ void cmdTransitionImageLayout(
 Renderer::Renderer(Window &window, Device &device) : windowRef{window}, deviceRef{device} {
     m_currentImageIndex = 0;
     recreateSwapChain();
-    createOffscreenResources();
     createCommandBuffers();
 }
 
 Renderer::~Renderer() {
     freeCommandBuffers();
-    cleanupOffscreenResources();
+    cleanupOffscreenResources(true);
 }
 
 void Renderer::recreateSwapChain() {
@@ -71,16 +69,18 @@ void Renderer::recreateSwapChain() {
         glfwWaitEvents();
     }
     vkDeviceWaitIdle(deviceRef.device());
-    cleanupOffscreenResources();
-    if (m_SwapChain == nullptr) {
+    m_OldSwapChain = std::move(m_SwapChain);
+    if (m_OldSwapChain == nullptr) {
         m_SwapChain = std::make_unique<SwapChain>(deviceRef, extent);
     } else {
-        std::shared_ptr<SwapChain> oldSwapChain = std::move(m_SwapChain);
-        m_SwapChain = std::make_unique<SwapChain>(deviceRef, extent, oldSwapChain);
-        if (!oldSwapChain->compareSwapFormats(*m_SwapChain)) {
+        m_OldSwapChainCleanupTimer = 3;
+        m_SwapChain = std::make_unique<SwapChain>(deviceRef, extent, m_OldSwapChain);
+        if (!m_OldSwapChain->compareSwapFormats(*m_SwapChain)) {
             throw std::runtime_error("Swap chain image(or depth) format has changed!");
         }
     }
+    m_currentFrameIndex = 0;
+    m_currentImageIndex = 0;
     createOffscreenResources();
 }
 
@@ -104,143 +104,20 @@ void Renderer::freeCommandBuffers() {
     m_commandBuffers.clear();
 }
 
-VkCommandBuffer Renderer::beginFrame() {
-    assert(!m_isFrameStarted && "Can't call beginFrame while already in progress");
-
-    const auto result = m_SwapChain->acquireNextImage(&m_currentImageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        recreateSwapChain();
-        return nullptr;
-    }
-
-    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("failed to acquire swap chain image!");
-    }
-
-    m_isFrameStarted = true;
-
-    const auto commandBuffer = getCurrentCommandBuffer();
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
-    return commandBuffer;
-}
-
-void Renderer::endFrame() {
-    assert(m_isFrameStarted && "Can't call endFrame while frame is not in progress");
-    const auto commandBuffer = getCurrentCommandBuffer();
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record command buffer!");
-    }
-
-    if (const auto result = m_SwapChain->submitCommandBuffers(&commandBuffer, &m_currentImageIndex);
-        result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || windowRef.windowResized()) {
-        windowRef.resetWindowResizedFlag();
-        recreateSwapChain();
-    } else if (result != VK_SUCCESS) {
-        throw std::runtime_error("failed to present swap chain image!");
-    }
-
-    m_isFrameStarted = false;
-    m_currentFrameIndex = (m_currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
-}
-
-void Renderer::beginSwapChainRendering(const VkCommandBuffer commandBuffer) const {
-    assert(m_isFrameStarted && "Can't call beginSwapChainRendering if frame is not in progress");
-    assert(commandBuffer == getCurrentCommandBuffer() && "Can't begin rendering on command buffer from a different frame");
-
-    VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    cmdTransitionImageLayout(
-        commandBuffer,
-        m_SwapChain->getImage(m_currentImageIndex),
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        subresourceRange,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        0,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
-    VkRenderingAttachmentInfo colorAttachment{};
-    colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    colorAttachment.imageView = m_SwapChain->getMultisampleColorImageView(m_currentImageIndex);
-    colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachment.resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
-    colorAttachment.resolveImageView = m_SwapChain->getImageView(m_currentImageIndex);
-    colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.clearValue.color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
-
-    VkRenderingAttachmentInfo depthAttachment{};
-    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    depthAttachment.imageView = m_SwapChain->getDepthImageView(m_currentImageIndex);
-    depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.clearValue.depthStencil = {1.0f, 0};
-
-    VkRenderingInfo renderingInfo{};
-    renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-    renderingInfo.renderArea = {{0, 0}, m_SwapChain->getSwapChainExtent()};
-    renderingInfo.layerCount = 1;
-    renderingInfo.colorAttachmentCount = 1;
-    renderingInfo.pColorAttachments = &colorAttachment;
-    renderingInfo.pDepthAttachment = &depthAttachment;
-    renderingInfo.pStencilAttachment = nullptr;
-
-    vkCmdBeginRendering(commandBuffer, &renderingInfo);
-
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(m_SwapChain->getSwapChainExtent().width);
-    viewport.height = static_cast<float>(m_SwapChain->getSwapChainExtent().height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    const VkRect2D scissor{{0, 0}, m_SwapChain->getSwapChainExtent()};
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-}
-
-void Renderer::endSwapChainRendering(const VkCommandBuffer commandBuffer) const {
-    assert(m_isFrameStarted && "Can't call endSwapChainRendering if frame is not in progress");
-    assert(commandBuffer == getCurrentCommandBuffer() && "Can't end rendering on command buffer from a different frame");
-
-    vkCmdEndRendering(commandBuffer);
-
-    VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    cmdTransitionImageLayout(
-        commandBuffer,
-        m_SwapChain->getImage(m_currentImageIndex),
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        subresourceRange,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        0);
-}
-
 void Renderer::createOffscreenResources() {
     cleanupOffscreenResources();
-
-    m_offscreenExtent = m_SwapChain->getSwapChainExtent();
-    m_offscreenFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    static bool persistent = false;
 
     // Create color attachment
     VkImageCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     createInfo.imageType = VK_IMAGE_TYPE_2D;
-    createInfo.extent.width = m_offscreenExtent.width;
-    createInfo.extent.height = m_offscreenExtent.height;
+    createInfo.extent.width = m_SwapChain->getSwapChainExtent().width;
+    createInfo.extent.height = m_SwapChain->getSwapChainExtent().height;
     createInfo.extent.depth = 1;
     createInfo.mipLevels = 1;
     createInfo.arrayLayers = 1;
-    createInfo.format = m_offscreenFormat;
+    createInfo.format = getFormat();
     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     createInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -252,56 +129,58 @@ void Renderer::createOffscreenResources() {
     VkImageCreateInfo colorResolveCreateInfo{};
     colorResolveCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     colorResolveCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-    colorResolveCreateInfo.extent.width = m_offscreenExtent.width;
-    colorResolveCreateInfo.extent.height = m_offscreenExtent.height;
+    colorResolveCreateInfo.extent.width = m_SwapChain->getSwapChainExtent().width;
+    colorResolveCreateInfo.extent.height = m_SwapChain->getSwapChainExtent().height;
     colorResolveCreateInfo.extent.depth = 1;
     colorResolveCreateInfo.mipLevels = 1;
     colorResolveCreateInfo.arrayLayers = 1;
-    colorResolveCreateInfo.format = m_offscreenFormat;
+    colorResolveCreateInfo.format = getFormat();
     colorResolveCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     colorResolveCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorResolveCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    colorResolveCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     colorResolveCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     colorResolveCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     colorResolveCreateInfo.flags = 0;
 
     // Multi sampled color
     deviceRef.createImageWithInfo(createInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_offscreenImage, m_offscreenImageMemory);
-    m_offscreenImageView = m_SwapChain->createImageView(m_offscreenImage, m_offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+    m_offscreenImageView = m_SwapChain->createImageView(m_offscreenImage, getFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 1);
 
     // Resolve (single sampled)
     deviceRef.createImageWithInfo(colorResolveCreateInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_offscreenResolveImage, m_offscreenResolveMemory);
-    m_offscreenResolveImageView = m_SwapChain->createImageView(m_offscreenResolveImage, m_offscreenFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+    m_offscreenResolveImageView = m_SwapChain->createImageView(m_offscreenResolveImage, getFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 1);
 
-    // Create sampler
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.maxAnisotropy = 1.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    if (vkCreateSampler(deviceRef.device(), &samplerInfo, nullptr, &m_offscreenSampler) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create offscreen sampler!");
+    if (!persistent) {
+        // Create sampler
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.anisotropyEnable = VK_FALSE;
+        samplerInfo.maxAnisotropy = 1.0f;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        if (vkCreateSampler(deviceRef.device(), &samplerInfo, nullptr, &m_offscreenSampler) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create offscreen sampler!");
+        }
+        persistent = true;
     }
 
     // Create depth image
-    m_offscreenDepthFormat = m_SwapChain->findDepthFormat();
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = m_offscreenExtent.width;
-    imageInfo.extent.height = m_offscreenExtent.height;
+    imageInfo.extent.width = m_SwapChain->getSwapChainExtent().width;
+    imageInfo.extent.height = m_SwapChain->getSwapChainExtent().height;
     imageInfo.extent.depth = 1;
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
-    imageInfo.format = m_offscreenDepthFormat;
+    imageInfo.format = getDepthFormat();
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -315,7 +194,7 @@ void Renderer::createOffscreenResources() {
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = m_offscreenDepthImage;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = m_offscreenDepthFormat;
+    viewInfo.format = getDepthFormat();
     viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
@@ -329,20 +208,20 @@ void Renderer::createOffscreenResources() {
     // Initial layout transition
     auto cmd = deviceRef.beginSingleTimeCommands();
     VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    cmdTransitionImageLayout(
+    cmdTransitionImage(
         cmd,
         m_offscreenResolveImage,
         VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         subresourceRange,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-        0, VK_ACCESS_SHADER_READ_BIT);
+        VK_ACCESS_NONE, VK_ACCESS_SHADER_READ_BIT);
     deviceRef.endSingleTimeCommands(cmd);
 
     m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     createOffscreenDescriptorSet();
 }
 
-void Renderer::cleanupOffscreenResources() {
+void Renderer::cleanupOffscreenResources(bool lastCall) {
     const auto device = deviceRef.device();
 
     if (m_offscreenImGuiDescriptorSet) {
@@ -382,10 +261,6 @@ void Renderer::cleanupOffscreenResources() {
         vkFreeMemory(device, m_offscreenImageMemory, nullptr);
         m_offscreenImageMemory = VK_NULL_HANDLE;
     }
-    if (m_offscreenSampler) {
-        vkDestroySampler(device, m_offscreenSampler, nullptr);
-        m_offscreenSampler = VK_NULL_HANDLE;
-    }
     if (m_offscreenDepthView) {
         vkDestroyImageView(device, m_offscreenDepthView, nullptr);
         m_offscreenDepthView = VK_NULL_HANDLE;
@@ -397,6 +272,10 @@ void Renderer::cleanupOffscreenResources() {
     if (m_offscreenDepthMemory) {
         vkFreeMemory(device, m_offscreenDepthMemory, nullptr);
         m_offscreenDepthMemory = VK_NULL_HANDLE;
+    }
+    if (lastCall && m_offscreenSampler) {
+        vkDestroySampler(device, m_offscreenSampler, nullptr);
+        m_offscreenSampler = VK_NULL_HANDLE;
     }
 }
 
@@ -461,19 +340,72 @@ void Renderer::createOffscreenDescriptorSet() {
     vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
 }
 
+VkCommandBuffer Renderer::beginFrame() {
+    assert(!m_isFrameStarted && "Can't call beginFrame while already in progress");
+
+    if (m_OldSwapChain) {
+        if (m_OldSwapChainCleanupTimer > 0) {
+            m_OldSwapChainCleanupTimer--;
+        } else {
+            m_OldSwapChain.reset();
+        }
+    }
+
+    const auto result = m_SwapChain->acquireNextImage(&m_currentImageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        return nullptr;
+    }
+
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    m_isFrameStarted = true;
+
+    const auto commandBuffer = getCurrentCommandBuffer();
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+    return commandBuffer;
+}
+
+bool Renderer::endFrame() {
+    assert(m_isFrameStarted && "Can't call endFrame while frame is not in progress");
+
+    const auto commandBuffer = getCurrentCommandBuffer();
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer!");
+    }
+
+    const auto result = m_SwapChain->submitCommandBuffers(&commandBuffer, &m_currentImageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || windowRef.windowResized()) {
+        m_isFrameStarted = false;
+        windowRef.setFramebufferResizedFlag(true);
+        return false;
+    }
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
+    m_isFrameStarted = false;
+    m_currentFrameIndex = (m_currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
+
+    return true;
+}
+
 void Renderer::beginOffscreenRendering(VkCommandBuffer commandBuffer) {
     if (m_offscreenCurrentLayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
         VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-        cmdTransitionImageLayout(
+        cmdTransitionImage(
             commandBuffer,
             m_offscreenResolveImage,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             subresourceRange,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_ACCESS_SHADER_READ_BIT,
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
         m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 
@@ -498,7 +430,7 @@ void Renderer::beginOffscreenRendering(VkCommandBuffer commandBuffer) {
 
     VkRenderingInfo renderingInfo{};
     renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-    renderingInfo.renderArea = {{0, 0}, m_offscreenExtent};
+    renderingInfo.renderArea = {{0, 0}, m_SwapChain->getSwapChainExtent()};
     renderingInfo.layerCount = 1;
     renderingInfo.colorAttachmentCount = 1;
     renderingInfo.pColorAttachments = &colorAttachment;
@@ -510,34 +442,99 @@ void Renderer::beginOffscreenRendering(VkCommandBuffer commandBuffer) {
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(m_offscreenExtent.width);
-    viewport.height = static_cast<float>(m_offscreenExtent.height);
+    viewport.width = static_cast<float>(m_SwapChain->getSwapChainExtent().width);
+    viewport.height = static_cast<float>(m_SwapChain->getSwapChainExtent().height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    const VkRect2D scissor{{0, 0}, m_offscreenExtent};
+    const VkRect2D scissor{{0, 0}, m_SwapChain->getSwapChainExtent()};
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void Renderer::endOffscreenRendering(VkCommandBuffer commandBuffer) const {
+void Renderer::endOffscreenRendering(VkCommandBuffer commandBuffer) {
     vkCmdEndRendering(commandBuffer);
-}
-
-void Renderer::transitionOffscreenImageForImGui(VkCommandBuffer commandBuffer) {
     if (m_offscreenCurrentLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-        cmdTransitionImageLayout(
+        cmdTransitionImage(
             commandBuffer,
             m_offscreenResolveImage,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             subresourceRange,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            VK_ACCESS_SHADER_READ_BIT);
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT);
         m_offscreenCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
+}
+
+void Renderer::beginRendering(const VkCommandBuffer commandBuffer) const {
+    assert(m_isFrameStarted && "Can't call beginRendering if frame is not in progress");
+    assert(commandBuffer == getCurrentCommandBuffer() && "Can't begin rendering on command buffer from a different frame");
+
+    VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    cmdTransitionImage(
+        commandBuffer,
+        m_SwapChain->getImage(m_currentImageIndex),
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        subresourceRange,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_ACCESS_NONE, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+    VkRenderingAttachmentInfo colorAttachment{};
+    colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachment.imageView = m_SwapChain->getMultisampleColorImageView(m_currentImageIndex);
+    colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachment.resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+    colorAttachment.resolveImageView = m_SwapChain->getImageView(m_currentImageIndex);
+    colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.clearValue.color = { 0, 0, 0, 0 };
+
+    VkRenderingAttachmentInfo depthAttachment{};
+    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    depthAttachment.imageView = m_SwapChain->getDepthImageView(m_currentImageIndex);
+    depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    depthAttachment.clearValue.depthStencil = {1.0f, 0};
+
+    VkRenderingInfo renderingInfo{};
+    renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    renderingInfo.renderArea = {{0, 0}, m_SwapChain->getSwapChainExtent()};
+    renderingInfo.layerCount = 1;
+    renderingInfo.colorAttachmentCount = 1;
+    renderingInfo.pColorAttachments = &colorAttachment;
+    renderingInfo.pDepthAttachment = &depthAttachment;
+    renderingInfo.pStencilAttachment = nullptr;
+
+    vkCmdBeginRendering(commandBuffer, &renderingInfo);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(m_SwapChain->getSwapChainExtent().width);
+    viewport.height = static_cast<float>(m_SwapChain->getSwapChainExtent().height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    const VkRect2D scissor{{0, 0}, m_SwapChain->getSwapChainExtent()};
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+}
+
+void Renderer::endRendering(const VkCommandBuffer commandBuffer) const {
+    assert(m_isFrameStarted && "Can't call endRendering if frame is not in progress");
+    assert(commandBuffer == getCurrentCommandBuffer() && "Can't end rendering on command buffer from a different frame");
+
+    vkCmdEndRendering(commandBuffer);
+
+    VkImageSubresourceRange subresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    cmdTransitionImage(
+        commandBuffer,
+        m_SwapChain->getImage(m_currentImageIndex),
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        subresourceRange,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_NONE);
 }
 
 } // Namespace KaguEngine
