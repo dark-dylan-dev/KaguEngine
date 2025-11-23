@@ -346,10 +346,8 @@ VkCommandBuffer Renderer::beginFrame() {
     if (m_OldSwapChain) {
         if (m_OldSwapChainCleanupTimer > 0) {
             m_OldSwapChainCleanupTimer--;
-            std::cout << "Frames before release old swap chain : " << m_OldSwapChainCleanupTimer << std::endl;
         } else {
             m_OldSwapChain.reset();
-            std::cout << "Destroyed the old swap chain\n";
         }
     }
 
@@ -387,10 +385,7 @@ bool Renderer::endFrame() {
         windowRef.setFramebufferResizedFlag(true);
         return false;
     }
-    else if (result == VK_SUBOPTIMAL_KHR) {
-        // Skip
-    }
-    else if (result != VK_SUCCESS) {
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
