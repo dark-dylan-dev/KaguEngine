@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [clang, cl, gcc]
+        c_compiler: [clang, cl]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -26,15 +26,8 @@ jobs:
         exclude:
           - os: windows-latest
             c_compiler: clang
-          - os: windows-latest
-            c_compiler: gcc
           - os: ubuntu-latest
             c_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-
-    container:
-      image: ${{ matrix.c_compiler == 'gcc' && 'gcc:15.1.0' || null }}
 
     steps:
       - uses: actions/checkout@v4
@@ -48,53 +41,17 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      - name: Check GCC version (GCC)
-        if: matrix.c_compiler == 'gcc'
-        run: |
-          gcc --version
-          g++ --version
-
       - name: Install system dependencies (Clang)
         if: matrix.c_compiler == 'clang'
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libc++-dev libc++abi-dev libx11-dev libwayland-dev libegl1-mesa-dev pkg-config
 
-      - name: Install system dependencies (GCC)
-        if: matrix.c_compiler == 'gcc'
-        run: |
-          apt-get update
-          apt-get install -y libxkbcommon-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libx11-dev libwayland-dev libegl1-mesa-dev pkg-config jq
-          
-      - name: Install CMake 3.31.5 (GCC)
-        if: matrix.c_compiler == 'gcc'
-        run: |
-          CMAKE_VERSION=3.31.5
-          CMAKE_OS=linux
-          CMAKE_ARCH=x86_64
-          CMAKE_FOLDER=cmake-$CMAKE_VERSION-$CMAKE_OS-$CMAKE_ARCH
-          CMAKE_TAR=$CMAKE_FOLDER.tar.gz
-          wget --no-verbose https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/$CMAKE_TAR
-          tar -xzf $CMAKE_TAR
-          mv $CMAKE_FOLDER /opt/cmake
-          ln -sf /opt/cmake/bin/cmake /usr/local/bin/cmake
-          ln -sf /opt/cmake/bin/ctest /usr/local/bin/ctest
-          ln -sf /opt/cmake/bin/cpack /usr/local/bin/cpack
-          ln -sf /opt/cmake/bin/cmake-gui /usr/local/bin/cmake-gui || true
-          ln -sf /opt/cmake/bin/ccmake /usr/local/bin/ccmake || true
-          cmake --version
-
-      - name: Patch sudo as no-op (GCC)
-        if: matrix.c_compiler == 'gcc'
-        run: |
-          echo -e '#!/bin/sh\n"$@"' > /usr/bin/sudo
-          chmod +x /usr/bin/sudo
-
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
         with:
           vulkan-query-version: 1.4.304.1
-          vulkan-components: Vulkan-Headers, Vulkan-Loader, Glslang, SPIRV-Cross, SPIRV-Tools, SPIRV-Reflect, SPIRV-Headers
+          vulkan-components: Vulkan-Headers, Vulkan-Loader, Glslang
           vulkan-use-cache: true
 
       - name: Setup Ninja
@@ -111,14 +68,6 @@ jobs:
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_CXX_FLAGS="-stdlib=libc++"
-          -G Ninja
-
-      - name: Configure CMake with GCC
-        if: matrix.c_compiler == 'gcc'
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -G Ninja
 
       - name: Configure CMake with MSVC
