@@ -40,18 +40,14 @@ endif()
 
 # Copy the assets in the build directory
 set(SOURCE_ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
-set(DEST_ASSETS_DIR   ${CMAKE_CURRENT_BINARY_DIR}/assets)
+set(DEST_ASSETS_DIR ${CMAKE_CURRENT_BINARY_DIR}/assets)
 add_custom_command(
     OUTPUT ${DEST_ASSETS_DIR}/.copied
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_ASSETS_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${SOURCE_ASSETS_DIR} ${DEST_ASSETS_DIR}
     COMMAND ${CMAKE_COMMAND} -E touch ${DEST_ASSETS_DIR}/.copied
-    COMMENT "Copying assets"
+    COMMENT "Copying ${SOURCE_ASSETS_DIR} to ${DEST_ASSETS_DIR}"
 )
-add_custom_target(copy_assets DEPENDS ${DEST_ASSETS_DIR}/.copied)
-add_dependencies(KaguEngine copy_assets)
-
-# Compiling shaders
-include(../CMake/CompileShaders.cmake)
-CompileShaders(${SOURCE_ASSETS_DIR}/shaders ${DEST_ASSETS_DIR}/shaders KaguEngine)
+add_custom_target(copy_assets ALL
+    DEPENDS ${DEST_ASSETS_DIR}/.copied
+)
