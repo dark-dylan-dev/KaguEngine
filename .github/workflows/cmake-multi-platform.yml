@@ -2,7 +2,7 @@ name: CMake on Windows/Linux
 
 on:
   push:
-    branches: [ "master", "CompileShadersCMake" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
