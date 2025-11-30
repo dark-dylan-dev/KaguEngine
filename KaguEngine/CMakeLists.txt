@@ -21,7 +21,7 @@ set_target_properties(KaguEngine PROPERTIES
 add_subdirectory(extern)
 
 # Adding Vulkan
-find_package(Vulkan REQUIRED)
+find_package(Vulkan COMPONENTS glslangValidator REQUIRED)
 if(NOT Vulkan_FOUND)
     message(FATAL_ERROR "Vulkan not found")
 endif()
@@ -41,13 +41,46 @@ endif()
 # Copy the assets in the build directory
 set(SOURCE_ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 set(DEST_ASSETS_DIR ${CMAKE_CURRENT_BINARY_DIR}/assets)
+set(TEMP_ASSETS_DIR ${CMAKE_CURRENT_BINARY_DIR}/assets_tmp)
 add_custom_command(
     OUTPUT ${DEST_ASSETS_DIR}/.copied
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${SOURCE_ASSETS_DIR} ${DEST_ASSETS_DIR}
+    ${SOURCE_ASSETS_DIR} ${TEMP_ASSETS_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEMP_ASSETS_DIR}/shaders
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${TEMP_ASSETS_DIR} ${DEST_ASSETS_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEMP_ASSETS_DIR}
     COMMAND ${CMAKE_COMMAND} -E touch ${DEST_ASSETS_DIR}/.copied
-    COMMENT "Copying ${SOURCE_ASSETS_DIR} to ${DEST_ASSETS_DIR}"
+    COMMENT "Copying assets"
 )
 add_custom_target(copy_assets ALL
     DEPENDS ${DEST_ASSETS_DIR}/.copied
 )
+
+# Compile shaders
+set(SHADER_SRC_DIR ${SOURCE_ASSETS_DIR}/shaders)
+set(SHADER_OUT_DIR ${DEST_ASSETS_DIR}/shaders)
+file(MAKE_DIRECTORY ${SHADER_OUT_DIR})
+file(GLOB_RECURSE SHADERS
+    ${SHADER_SRC_DIR}/*.vert
+    ${SHADER_SRC_DIR}/*.frag
+)
+set(SPV_SHADERS "")
+foreach(SH ${SHADERS})
+    get_filename_component(FILENAME ${SH} NAME)
+    set(SPV_OUTPUT ${SHADER_OUT_DIR}/${FILENAME}.spv)
+
+    add_custom_command(
+        OUTPUT ${SPV_OUTPUT}
+        COMMAND ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE} -V ${SH} -o ${SPV_OUTPUT}
+        DEPENDS ${SH}
+        COMMENT "Compiling shader ${FILENAME}"
+    )
+
+    list(APPEND SPV_SHADERS ${SPV_OUTPUT})
+endforeach()
+add_custom_target(compile_shaders ALL
+    DEPENDS ${SPV_SHADERS}
+)
+
+add_dependencies(KaguEngine copy_assets compile_shaders)
